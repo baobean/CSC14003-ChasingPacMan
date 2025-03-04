@@ -14,14 +14,24 @@ class Map:
             1: (50, 50, 200) # Tường (xanh dương)
         }
 
+    import csv
+
     def load_map(self, file_path):
         """Load bản đồ từ file CSV"""
         map_data = []
         with open(file_path, newline='') as csvfile:
             reader = csv.reader(csvfile)
             for row in reader:
-                map_data.append([int(cell) for cell in row])
+                int_row = [int(cell) for cell in row]
+                map_data.append(int_row)
+        
+        # Debugging: Print the loaded map to check correctness
+        print("Loaded Map:")
+        for row in map_data:
+            print(row)  # Should match map.csv format
+
         return map_data
+
 
     def draw(self, screen):
         """Vẽ bản đồ lên màn hình."""

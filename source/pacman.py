@@ -3,49 +3,74 @@ import pygame
 class Pacman(pygame.sprite.Sprite):
     def __init__(self, position):
         super().__init__()
-        self.pacman_open = pygame.image.load('assets/pacman_open.png').convert_alpha()
-        self.pacman_closed = pygame.image.load('assets/pacman_closed.png').convert_alpha()
-
+        pacman_open_1 = pygame.image.load('assets/pacman/pacman_1.png').convert_alpha()
+        pacman_open_1 = pygame.transform.scale2x(pacman_open_1)
+        pacman_open_2 = pygame.image.load('assets/pacman/pacman_2.png').convert_alpha()
+        pacman_open_2 = pygame.transform.scale2x(pacman_open_2)
+        pacman_closed = pygame.image.load('assets/pacman/pacman_3.png').convert_alpha()
+        pacman_closed = pygame.transform.scale2x(pacman_closed)
+        self.pacman_open = [pacman_open_1, pacman_open_2]
+        self.pacman_closed = pacman_closed
         self.sprites = {
-            "right": [self.pacman_open, self.pacman_closed],
-            "left": [pygame.transform.flip(self.pacman_open, True, False), 
-                     pygame.transform.flip(self.pacman_closed, True, False)],
-            "up": [pygame.transform.rotate(self.pacman_open, 90), 
-                   pygame.transform.rotate(self.pacman_closed, 90)],
-            "down": [pygame.transform.rotate(self.pacman_open, -90), 
-                     pygame.transform.rotate(self.pacman_closed, -90)]
+            "right": [self.pacman_closed, self.pacman_open[0], self.pacman_open[1]],
+            "left": [pygame.transform.flip(pacman_closed, True, False),
+                     pygame.transform.flip(pacman_open_1, True, False), 
+                     pygame.transform.flip(pacman_open_2, True, False)],
+            "up": [pygame.transform.rotate(pacman_closed, 90),
+                   pygame.transform.rotate(pacman_open_1, 90), 
+                   pygame.transform.rotate(pacman_open_2, 90)],
+            "down": [pygame.transform.rotate(pacman_closed, -90),
+                     pygame.transform.rotate(pacman_open_1, -90), 
+                     pygame.transform.rotate(pacman_open_2, -90),]
         }
 
         self.direction = "right"  # Default direction
         self.pacman_index = 0
-        self.image = self.sprites[self.direction][self.pacman_index]
-        self.rect = self.image.get_rect(midbottom=position)
-        self.speed = 5
+        self.image = self.sprites[self.direction][int(self.pacman_index)]
+        self.rect = self.image.get_rect(topleft=position)
+        self.speed = 10
+        
 
     def animation_state(self):
-        self.pacman_index = (self.pacman_index + 0.1) % 2  # Only 2 animation frames (open & closed)
+        self.pacman_index = (self.pacman_index + 0.5) % 2  # Only 2 animation frames (open & closed)
         self.image = self.sprites[self.direction][int(self.pacman_index)]  # Update sprite
 
-    def update(self):
+    def update(self, walls, ghosts):
         keys = pygame.key.get_pressed()
         moved = False 
 
+        new_x, new_y = self.rect.x, self.rect.y
+
         if keys[pygame.K_LEFT]:
-            self.rect.x -= self.speed
+            new_x -= self.speed
             self.direction = "left"
             moved = True
         elif keys[pygame.K_RIGHT]:
-            self.rect.x += self.speed
+            new_x += self.speed
             self.direction = "right"
             moved = True
         elif keys[pygame.K_UP]:
-            self.rect.y -= self.speed
+            new_y -= self.speed
             self.direction = "up"
             moved = True
         elif keys[pygame.K_DOWN]:
-            self.rect.y += self.speed
+            new_y += self.speed
             self.direction = "down"
             moved = True
 
         if moved:
             self.animation_state()  
+        
+        old_x, old_y = self.rect.x, self.rect.y
+        self.rect.topleft = (new_x, new_y)
+
+        if pygame.sprite.spritecollide(self, walls,False):  # Now using `self` instead of `test_rect`
+            print("Collision detected! Pac-Man cannot move.")
+            self.rect.topleft = (old_x, old_y) 
+
+        # Check for collision with ghosts
+        if pygame.sprite.spritecollide(self, ghosts, False):
+            print("Pac-Man collided with a ghost!")
+            self.rect.topleft = (old_x, old_y) 
+
+        

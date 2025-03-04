@@ -2,6 +2,7 @@ import pygame
 import csv
 from pacman import Pacman
 from ghost import Ghost
+from wall import Wall
 
 class Game:
     def __init__(self, map_file="map.csv"):
@@ -20,21 +21,40 @@ class Game:
         self.ghosts = pygame.sprite.Group(*self.create_ghosts())  # Use Group for multiple ghosts
 
     def load_map(self, file_path):
-        """Load map from CSV"""
+        """Load the game map from a CSV file and create wall objects."""
         map_data = []
         with open(file_path, newline='') as csvfile:
             reader = csv.reader(csvfile)
-            for row in reader:
-                map_data.append([int(cell) for cell in row])
+            for y, row in enumerate(reader):
+                int_row = [int(cell) for cell in row]  # Convert each row into a list of integers
+                map_data.append(int_row)
+
+        self.walls = pygame.sprite.Group()  # Initialize walls group
+
+        for y, row in enumerate(map_data):
+            for x, tile in enumerate(row):
+                if tile == 1:  # 1 represents a wall
+                    wall = Wall((x * self.tile_size, y * self.tile_size), (self.tile_size, self.tile_size))
+                    self.walls.add(wall)  # Add to walls group
+                    print(f"Wall created at: ({x * self.tile_size}, {y * self.tile_size})")
+
         return map_data
 
+
+
     def create_pacman(self):
-        """Find Pac-Man's position from the map and create Pac-Man"""
+        pacman_position = None
+
+        # Locate Pac-Man position from the map
         for y, row in enumerate(self.map_state):
-            for x, cell in enumerate(row):
-                if cell == 6:
-                    return Pacman((x * self.tile_size, y * self.tile_size))
-        return Pacman((1 * self.tile_size, 1 * self.tile_size))  # Default position if not found
+            for x, tile in enumerate(row):
+                if tile == 6:
+                    pacman_position = (x * self.tile_size, y * self.tile_size)
+                    print(f"Pac-Man found at: {pacman_position}")  # Debugging output
+                    break
+
+        return Pacman(pacman_position if pacman_position else (1 * self.tile_size, 1 * self.tile_size))
+
 
     def create_ghosts(self):
         """Find ghosts' positions from the map and create them"""
@@ -44,11 +64,12 @@ class Game:
             for x, cell in enumerate(row):
                 if cell in ghost_types:
                     ghosts.append(Ghost(ghost_types[cell], (x * self.tile_size, y * self.tile_size)))
+                    print(f"Ghost found at: {x,y}") 
         return ghosts
 
     def draw_map(self):
         """Draw the game map"""
-        wall_color = (50, 50, 200)
+        wall_color = (34, 32, 217)
         for y in range(len(self.map_state)):
             for x in range(len(self.map_state[y])):
                 if self.map_state[y][x] == 1:
@@ -82,14 +103,14 @@ class Game:
                     "ghost": ghost_pos  # The specific ghost moving
                 }
 
-                ghost.update(self.map_state, positions)
+                #ghost.update(self.map_state, positions)
 
             # Process events
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
 
-            self.pacman.update()
+            self.pacman.update(self.walls, self.ghosts)
 
             # Draw sprites
             self.pacman.draw(self.screen)  # Draw Pac-Man
