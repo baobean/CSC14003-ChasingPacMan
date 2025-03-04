@@ -1,6 +1,6 @@
 from collections import deque
 import heapq
-
+import tracemalloc
 def bfs_algorithm(map_state, positions):
     return (-1, -1)  # No path found
 
