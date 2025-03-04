@@ -5,7 +5,7 @@ def bfs_algorithm(map_state, positions):
     return (-1, -1)  # No path found
 
 #DFS algorithm, return a path from current position to goal
-def dfs(map_state, current_position, goal, path, visited):
+def dfs(map_state, current_position, goal, path, visited, expanded_node):
     #Check if the given position is valid within the map_state
     #mapstate[x][y] = -1 means there's an obstacle there
     def is_valid(map_state, position):
@@ -15,7 +15,7 @@ def dfs(map_state, current_position, goal, path, visited):
         return path
     
     visited.add(current_position)
-
+    expanded_node += 1
     #right, left, up, down
     directions = [(0,1), (0,-1), (1,0), (-1,0)]
     
@@ -39,9 +39,9 @@ def dfs_algorithm(map_state, positions):
     tracemalloc.start()  # Start memory tracking
     start_time = time.time()  # Track execution time
     
-    path = dfs(map_state, positions["pink ghost"], positions["pacman"], [], visited)
+    path = dfs(map_state, positions["pink ghost"], positions["pacman"], [], visited, expanded_node)
+    
     # if the path is not empty, return the next position to move
-    execution_time = time.time() - start_time  # Compute elapsed time
     if path:
         execution_time = time.time() - start_time  # Compute elapsed time
         memory_usage = tracemalloc.get_traced_memory()[1]
