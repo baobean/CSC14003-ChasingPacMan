@@ -51,52 +51,9 @@ def bfs_algorithm(map_state, positions):
     return (-1, -1), execution_time, expanded_nodes, memory_usage  # No path found
 
 #DFS algorithm, return a path from current position to goal and expanded_nodes
-def dfs(map_state, current_position, goal, path, visited, expanded_nodes):
-    #Check if the given position is valid within the map_state
-    #mapstate[x][y] = -1 means there's an obstacle there
-    def is_valid(map_state, position):
-        x, y = position[0], position[1]
-        return 0 <= x < len(map_state) and 0 <= y < len(map_state[0]) and map_state[x][y] != -1
-    if current_position == goal:
-        return path, expanded_nodes
-    
-    visited.add(current_position)
-    expanded_nodes += 1
-    #right, left, up, down
-    directions = [(0,1), (0,-1), (1,0), (-1,0)]
-    
-    #go right, left, up, down to find a goal
-    for direction in directions:
-        next_position = (current_position[0] + direction[0], current_position[1] + direction[1])
-        if is_valid(map_state, next_position) and next_position not in visited: #if this is valid position, keep going
-            path, expanded_nodes = dfs(map_state, next_position, goal, path + [next_position], visited, expanded_nodes) 
-            if path: # if the path is found, return path
-                return path, expanded_nodes
-    visited.remove(current_position)
-
-    #return empty array if can't find a path
-    return [], expanded_nodes
 
 def dfs_algorithm(map_state, positions):
-    path = []
-    visited = set()
-    
-    expanded_nodes = 0  # Count expanded nodes
-    tracemalloc.start()  # Start memory tracking
-    start_time = time.time()  # Track execution time
-    
-    path, expanded_nodes = dfs(map_state, positions["ghost"], positions["pacman"], [], visited, expanded_nodes)
-    
-    # if the path is not empty, return the next position to move
-    if path:
-        execution_time = time.time() - start_time  # Compute elapsed time
-        memory_usage = tracemalloc.get_traced_memory()[1]
-        tracemalloc.stop()
-        return path[0], execution_time, expanded_nodes, memory_usage
-    execution_time = time.time() - start_time  # Compute elapsed time
-    memory_usage = tracemalloc.get_traced_memory()[1]
-    tracemalloc.stop()
-    return (-1, -1), execution_time, expanded_nodes, memory_usage # No path found
+    return (-1, -1)
 
 def ucs_algorithm(map_state, positions):
     """Uniform-Cost Search for a specific ghost, avoiding other ghosts"""
