@@ -23,13 +23,13 @@ def dfs(map_state, current_position, goal, path, visited, expanded_nodes):
     for direction in directions:
         next_position = (current_position[0] + direction[0], current_position[1] + direction[1])
         if is_valid(map_state, next_position) and next_position not in visited: #if this is valid position, keep going
-            path = dfs(map_state, next_position, goal, path + [next_position], visited, expanded_nodes) 
+            path, expanded_nodes = dfs(map_state, next_position, goal, path + [next_position], visited, expanded_nodes) 
             if path: # if the path is found, return path
-                return path
+                return path, expanded_nodes
     visited.remove(current_position)
 
     #return empty array if can't find a path
-    return []
+    return [], expanded_nodes
 
 def dfs_algorithm(map_state, positions):
     path = []
