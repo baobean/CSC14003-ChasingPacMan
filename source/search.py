@@ -39,7 +39,7 @@ def dfs_algorithm(map_state, positions):
     tracemalloc.start()  # Start memory tracking
     start_time = time.time()  # Track execution time
     
-    path, expanded_nodes = dfs(map_state, positions["pink ghost"], positions["pacman"], [], visited, expanded_nodes)
+    path, expanded_nodes = dfs(map_state, positions["ghost"], positions["pacman"], [], visited, expanded_nodes)
     
     # if the path is not empty, return the next position to move
     if path:
