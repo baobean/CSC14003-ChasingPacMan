@@ -1,8 +1,50 @@
 from collections import deque
 import heapq
 import tracemalloc
+import time
+
+def bfs(start, goal, map_state):
+    queue = deque([start])
+    visited = set([start])
+    parent = {}
+
+    expanded_nodes = 0  
+    tracemalloc.start()  # Start memory tracking
+    start_time = time.time() 
+
+    while queue:
+        current = queue.popleft()
+
+        expanded_nodes += 1
+
+        if current == goal:
+            path = []
+            while current != start:
+                path.append(current)
+                current = parent[current]
+            execution_time = time.time() - start_time
+            memory_usage = tracemalloc.get_traced_memory()[1]
+            tracemalloc.stop()
+            return path[::-1][0] if path else start, execution_time, expanded_nodes, memory_usage
+
+        for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+            next_pos = (current[0] + dx, current[1] + dy)
+
+            if next_pos not in visited and map_state[next_pos[0]][next_pos[1]] == 0:
+                queue.append(next_pos)
+                visited.add(next_pos)
+                parent[next_pos] = current
+
+    execution_time = time.time() - start_time
+    memory_usage = tracemalloc.get_traced_memory()[1]
+    tracemalloc.stop()  # Stop memory tracking
+    return (-1, -1), execution_time, expanded_nodes, memory_usage  # No path found
+
 def bfs_algorithm(map_state, positions):
-    return (-1, -1)  # No path found
+    """return the next appropriate move"""
+    blue_pos = positions[0] 
+    pacman_pos = positions[4]
+    return bfs(blue_pos, pacman_pos, map_state)
 
 #DFS algorithm, return a path from current position to goal
 def dfs(map_state, current_position, goal, path, visited, expanded_node):
@@ -39,7 +81,7 @@ def dfs_algorithm(map_state, positions):
     tracemalloc.start()  # Start memory tracking
     start_time = time.time()  # Track execution time
     
-    path = dfs(map_state, positions["pink ghost"], positions["pacman"], [], visited, expanded_node)
+    path = dfs(map_state, positions["pink ghost"], positions["pacman"], [], visited, expanded_nodes)
     
     # if the path is not empty, return the next position to move
     if path:
@@ -51,10 +93,6 @@ def dfs_algorithm(map_state, positions):
     memory_usage = tracemalloc.get_traced_memory()[1]
     tracemalloc.stop()
     return (-1, -1), execution_time, expanded_nodes, memory_usage # No path found
-
-import heapq
-import time
-import tracemalloc  # Memory tracking
 
 def ucs_algorithm(map_state, positions):
     """Uniform-Cost Search for a specific ghost, avoiding other ghosts"""
