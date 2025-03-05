@@ -1,6 +1,6 @@
 import csv
 import time
-from search import ucs_algorithm
+from search import ucs_algorithm, bfs_algorithm
 
 def load_test_map(file_path):
     """Load test map from CSV"""
@@ -38,10 +38,10 @@ for i, positions in enumerate(test_cases, start=1):
     print(f"  Pac-Man Position: {positions['pacman']}")
 
     while positions["ghost"] != positions["pacman"]:
-        next_move, execution_time, _, memory_usage = ucs_algorithm(test_map, positions)
+        next_move, execution_time, _, memory_usage = bfs_algorithm(test_map, positions)
 
         if next_move == (-1, -1):  
-            print("  No path found!")
+            print("No path found!")
             break  
 
         positions["ghost"] = next_move  
