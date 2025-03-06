@@ -93,11 +93,11 @@ def ucs_algorithm(map_state, positions):
 
         for dx, dy in [(-1, 0), (0, -1), (1, 0), (0, 1)]:  # Left → Up → Right → Down
             next_pos = (current[0] + dx, current[1] + dy)
-            new_cost = cost + 1  # Each move has cost = 1
+            new_cost = cost + map_state[next_pos[0]][next_pos[1]]  # Each move has cost = 1
 
             if (0 <= next_pos[0] < len(map_state) and 
                 0 <= next_pos[1] < len(map_state[0]) and 
-                map_state[next_pos[0]][next_pos[1]] == 0 and 
+                map_state[next_pos[0]][next_pos[1]] != float('inf') and 
                 next_pos not in other_ghosts):
 
                 if next_pos not in cost_so_far or new_cost < cost_so_far[next_pos]:
