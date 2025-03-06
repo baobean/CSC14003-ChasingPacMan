@@ -62,8 +62,8 @@ def ucs_algorithm(map_state, positions):
     other_ghosts = set(positions["ghosts"])  # Other ghosts' positions
 
     pq = [(0, start)]  # Priority queue (cost, position)
-    visited = set()
-    parent = {}
+    visited = set()  # Use set for fast lookup
+    parent = {start: None}
     cost_so_far = {start: 0}
 
     expanded_nodes = 0  # Count expanded nodes
@@ -72,6 +72,10 @@ def ucs_algorithm(map_state, positions):
 
     while pq:
         cost, current = heapq.heappop(pq)
+
+        if current in visited:
+            continue
+        visited.add(current)
         expanded_nodes += 1
 
         if current == goal:
@@ -86,22 +90,25 @@ def ucs_algorithm(map_state, positions):
 
             return path[::-1][0] if path else start, execution_time, expanded_nodes, memory_usage
 
-        for dx, dy in [(-1, 0), (0, -1), (1, 0), (0, 1)]:  # Right → Up → Left → Down
+        for dx, dy in [(-1, 0), (0, -1), (1, 0), (0, 1)]:  # Left → Up → Right → Down
             next_pos = (current[0] + dx, current[1] + dy)
-            new_cost = cost_so_far[current] + 1  # Each move has cost = 1
+            new_cost = cost + map_state[next_pos[0]][next_pos[1]]  # Each move has cost = 1
 
-            if next_pos not in visited and map_state[next_pos[1]][next_pos[0]] == 0 and next_pos not in other_ghosts:
-                heapq.heappush(pq, (new_cost, next_pos))
-                visited.add(next_pos)
-                parent[next_pos] = current
-                cost_so_far[next_pos] = new_cost
+            if (0 <= next_pos[0] < len(map_state) and 
+                0 <= next_pos[1] < len(map_state[0]) and 
+                map_state[next_pos[0]][next_pos[1]] != float('inf') and 
+                next_pos not in other_ghosts):
+
+                if next_pos not in cost_so_far or new_cost < cost_so_far[next_pos]:
+                    heapq.heappush(pq, (new_cost, next_pos))
+                    parent[next_pos] = current
+                    cost_so_far[next_pos] = new_cost
 
     execution_time = time.time() - start_time  # Compute elapsed time
     memory_usage = tracemalloc.get_traced_memory()[1]
     tracemalloc.stop()
 
     return (-1, -1), execution_time, expanded_nodes, memory_usage  # No path found
-
 
 
 def astar_algorithm(map_state, positions):
