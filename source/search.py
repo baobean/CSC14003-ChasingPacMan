@@ -52,6 +52,44 @@ def bfs_algorithm(map_state, positions):
 #DFS algorithm, return a path from current position to goal and expanded_nodes
 
 def dfs_algorithm(map_state, positions):
+    start = positions["ghost"]
+    goal = positions["pacman"]
+    other_ghosts = set(positions["ghosts"])
+
+
+    expanded_nodes = 0  # Count expanded nodes
+    tracemalloc.start()  # Start memory tracking
+    start_time = time.time()  # Track execution time
+
+    stack = []
+    visited = set(start)
+    parent = {}
+    stack.append(start)
+
+    while stack:
+        expanded_nodes += 1
+        current_pos = stack.pop(0)
+        if current_pos == goal:
+            path = []
+            while current_pos != start:
+                path.append(current_pos)
+                current_pos = parent[current_pos]
+
+            execution_time = time.time() - start_time  # Compute elapsed time
+            memory_usage = tracemalloc.get_traced_memory()[1]  # Peak memory usage
+            tracemalloc.stop()
+            return path[::-1][0] if path else start, execution_time, expanded_nodes, memory_usage
+
+        for dx, dy in [(-1, 0), (0, -1), (1, 0), (0, 1)]:
+            next_pos = (current_pos[0] + dx, current_pos[1] + dy)
+            
+            if next_pos not in visited and next_pos not in other_ghosts and map_state[next_pos[0]][next_pos[1]] == 0:
+                parent[next_pos] = current_pos
+                visited.add(next_pos)
+                stack.append(next_pos)
+    execution_time = time.time() - start_time  # Compute elapsed time
+    memory_usage = tracemalloc.get_traced_memory()[1]  # Peak memory usage
+    tracemalloc.stop()
     return (-1, -1)
 
 def ucs_algorithm(map_state, positions):
