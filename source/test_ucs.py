@@ -1,5 +1,5 @@
 import csv
-import time
+import timeit
 from search import ucs_algorithm, bfs_algorithm
 
 def load_test_map(file_path):
@@ -29,30 +29,16 @@ print("\n====== UCS Algorithm - Multiple Test Cases ======\n")
 for i, positions in enumerate(test_cases, start=1):
     positions["ghosts"] = [(-1,-1)]  # Other ghosts are ignored
 
-    total_execution_time = 0
-    total_memory_usage = 0
-    step_count = 0
-
     print(f"Test Case {i}:")
     print(f"  Orange Ghost Starting Position: {positions['ghost']}")
     print(f"  Pac-Man Position: {positions['pacman']}")
 
-    while positions["ghost"] != positions["pacman"]:
-        next_move, execution_time, _, memory_usage = bfs_algorithm(test_map, positions)
-
-        if next_move == (-1, -1):  
-            print("No path found!")
-            break  
-
-        positions["ghost"] = next_move  
-        total_execution_time += execution_time
-        total_memory_usage += memory_usage
-        step_count += 1
-
-        print(f"  Step {step_count}: Ghost moves to {next_move}")
+    test_number = 5000
+    execution_time = timeit.timeit(lambda: bfs_algorithm(test_map, positions), number = test_number) / test_number
+    next_move, expanded_nodes, memory_usage = bfs_algorithm(test_map, positions)
 
     print(f"\n  Final Results for Test Case {i}:")
-    print(f"  ➤ Total Execution Time: {total_execution_time:.6f} seconds")
-    print(f"  ➤ Total Memory Usage: {total_memory_usage / 1024:.2f} KB")
-    print(f"  ➤ Total Steps Taken: {step_count}")
+    print(f"  ➤ Search Time: {execution_time:.6f} seconds")
+    print(f"  ➤ Total Memory Usage: {memory_usage / 1024:.2f} KB")
+    print(f"  ➤ Number of Expanded Nodes: {expanded_nodes}")
     print("-" * 50)

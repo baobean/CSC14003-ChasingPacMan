@@ -30,11 +30,10 @@ def bfs_algorithm(map_state, positions):
                 path.append(current)
                 current = parent[current]
 
-            execution_time = time.time() - start_time
             memory_usage = tracemalloc.get_traced_memory()[1]
             tracemalloc.stop()
 
-            return path[::-1][0] if path else start, execution_time, expanded_nodes, memory_usage
+            return path[::-1][0] if path else start, expanded_nodes, memory_usage
 
         for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
             next_pos = (current[0] + dx, current[1] + dy)
@@ -48,7 +47,7 @@ def bfs_algorithm(map_state, positions):
     memory_usage = tracemalloc.get_traced_memory()[1]
     tracemalloc.stop()  # Stop memory tracking
 
-    return (-1, -1), execution_time, expanded_nodes, memory_usage  # No path found
+    return (-1, -1), expanded_nodes, memory_usage  # No path found
 
 #DFS algorithm, return a path from current position to goal and expanded_nodes
 
