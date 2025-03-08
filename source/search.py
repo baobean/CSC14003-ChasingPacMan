@@ -207,5 +207,51 @@ def ids_algorithm(map_state, positions):
     memory_usage = tracemalloc.get_traced_memory()[1]  # Peak memory usage
     tracemalloc.stop()
     return (-1, -1), execution_time, expanded_nodes, memory_usage
+    
 def astar_algorithm(map_state, positions):
-    return (-1, -1)
+    start = positions["ghost"]
+    goal = positions["pacman"]
+    other_ghosts = set(positions["ghosts"])
+
+    pq = [(0, start)]
+    parent = {}
+    cost_so_far = {start: 0}
+
+    expanded_nodes = 0
+    tracemalloc.start()
+    start_time = time.time()
+
+    while pq:
+        cost, current = heapq.heappop(pq)
+        expanded_nodes += 1
+
+        if current == goal:
+            path = []
+            while current != start:
+                path.append(current)
+                current = parent[current]
+
+            execution_time = time.time() - start_time
+            memory_usage = tracemalloc.get_traced_memory()[1]
+            tracemalloc.stop()
+
+            return path[::-1][0] if path else start, execution_time, expanded_nodes, memory_usage
+        
+        for dx, dy in [(-1, 0), (0, -1), (1, 0), (0, 1)]:
+            next_pos = (current[0] + dx, current[1] + dy)
+            new_cost = cost_so_far[current] + 1
+
+            if next_pos in other_ghosts and map_state[next_pos[1]][next_pos[0]] != 0:
+                continue
+
+            if next_pos not in cost_so_far or new_cost < cost_so_far[next_pos]:
+                cost_so_far[next_pos] = new_cost
+                priority = new_cost + abs(goal[0] - next_pos[0]) + abs(goal[1] - next_pos[1])
+                heapq.heappush(pq, (priority, next_pos))
+                parent[next_pos] = current
+
+    execution_time = time.time() - start_time
+    memory_usage = tracemalloc.get_traced_memory()[1]
+    tracemalloc.stop()
+
+    return (-1, -1), execution_time, expanded_nodes, memory_usage
