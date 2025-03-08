@@ -148,6 +148,64 @@ def ucs_algorithm(map_state, positions):
 
     return (-1, -1), execution_time, expanded_nodes, memory_usage  # No path found
 
+def dls(curr_pos, goal, depth, map_state, other_ghosts, visited, parent):
+    # Depth-Limited Search (DLS) function
+    if depth >= 0:
+        if curr_pos == goal:
+            # If the current position is the goal, return the current position
+            return curr_pos
+        visited.add(curr_pos)
+        # Explore the four possible directions (up, left, down, right)
+        for dx, dy in [(-1, 0), (0, -1), (1, 0), (0, 1)]:
+            next_pos = (curr_pos[0] + dx, curr_pos[1] + dy)
+            # Check if the next position is valid and not visited
+            if next_pos not in visited and next_pos not in other_ghosts and map_state[next_pos[0]][next_pos[1]] == 0:
+                parent[next_pos] = curr_pos
+                # Recursive call to DLS with decremented depth
+                found = dls(next_pos, goal, depth - 1, map_state, other_ghosts, visited, parent)
+                if found:
+                    return found
+        visited.remove(curr_pos)
+    return None
 
+def ids_algorithm(map_state, positions):
+    # Iterative Deepening Search (IDS) algorithm
+    start = positions["ghost"]
+    goal = positions["pacman"]
+    other_ghosts = set(positions["ghosts"])
+
+    expanded_nodes = 0  # Count expanded nodes
+    tracemalloc.start()  # Start memory tracking
+    start_time = time.time()  # Track execution time
+
+    depth = 0
+    while True:
+        visited = set()
+        parent = {}
+        # Perform Depth-Limited Search (DLS) up to the current depth
+        result = dls(start, goal, depth, map_state, other_ghosts, visited, parent)
+        expanded_nodes += len(visited)
+        if result:
+            # If goal is found, reconstruct the path
+            path = []
+            current_pos = result
+            while current_pos != start:
+                path.append(current_pos)
+                current_pos = parent[current_pos]
+
+            execution_time = time.time() - start_time  # Compute elapsed time
+            memory_usage = tracemalloc.get_traced_memory()[1]  # Peak memory usage
+            tracemalloc.stop()
+            return path[::-1][0] if path else start, execution_time, expanded_nodes, memory_usage
+        depth += 1
+
+        # If depth exceeds a reasonable limit, break to prevent infinite loop
+        if depth > len(map_state) * len(map_state[0]):
+            break
+
+    execution_time = time.time() - start_time  # Compute elapsed time
+    memory_usage = tracemalloc.get_traced_memory()[1]  # Peak memory usage
+    tracemalloc.stop()
+    return (-1, -1), execution_time, expanded_nodes, memory_usage
 def astar_algorithm(map_state, positions):
     return (-1, -1)
