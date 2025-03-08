@@ -17,6 +17,9 @@ class Game:
 
         # Load map and entities
         self.map_state = self.load_map(map_file)
+
+        print(f"Map loaded: {self.map_state}")
+
         self.pacman = pygame.sprite.GroupSingle(self.create_pacman())  # Use GroupSingle for Pac-Man
         self.ghosts = pygame.sprite.Group(*self.create_ghosts())  # Use Group for multiple ghosts
 
@@ -103,7 +106,7 @@ class Game:
                     "ghost": ghost_pos  # The specific ghost moving
                 }
 
-                #ghost.update(self.map_state, positions)
+                ghost.update(self.walls, self.map_state, positions)
 
             # Process events
             for event in pygame.event.get():
@@ -117,6 +120,6 @@ class Game:
             self.ghosts.draw(self.screen)  # Draw all ghosts
 
             pygame.display.flip()
-            self.clock.tick(10)
+            self.clock.tick(3)
 
         pygame.quit()

@@ -1,6 +1,6 @@
 import pygame
-from search import bfs_algorithm, dfs_algorithm, ucs_algorithm, astar_algorithm
-
+#from search import bfs_algorithm, ids_algorithm, ucs_algorithm, astar_algorithm
+import search
 class Ghost(pygame.sprite.Sprite):
     def __init__(self, ghost_type, position):
         super().__init__()
@@ -33,13 +33,13 @@ class Ghost(pygame.sprite.Sprite):
     def assign_algorithm(self, ghost_type):
         """Assign the correct search algorithm to the ghost"""
         if ghost_type == "Blue":
-            return dfs_algorithm  # Depth-First Search
+            return search.ids_algorithm  # Depth-First Search
         elif ghost_type == "Pink":
-            return bfs_algorithm  # Breadth-First Search
+            return search.bfs_algorithm  # Breadth-First Search
         elif ghost_type == "Orange":
-            return ucs_algorithm  # Uniform-Cost Search
+            return search.ucs_algorithm  # Uniform-Cost Search
         elif ghost_type == "Red":
-            return astar_algorithm  # A* Search
+            return search.astar_algorithm  # A* Search
         return None  # Default if no algorithm is assigned
 
     def determine_direction(self, next_pos):
@@ -66,13 +66,19 @@ class Ghost(pygame.sprite.Sprite):
         self.animation_index = (self.animation_index + 0.1) % len(self.frames[self.direction])
         self.image = self.frames[self.direction][int(self.animation_index)]
 
-    def update(self, map_state, positions):
+    def update(self, walls, map_state, positions):
         if self.algorithm:
-            next_pos, execution_time, _, memory_usage = self.algorithm(map_state, positions)
+            next_pos, tmp_node, memory_usage = self.algorithm(map_state, positions)
+
+            print(next_pos)
 
             if isinstance(next_pos, tuple) and len(next_pos) == 2:  # Ensure next_pos is a valid (x, y) tuple
                 self.direction = self.determine_direction(next_pos)
-                self.rect.x, self.rect.y = next_pos[0] * 40, next_pos[1] * 40  
+                self.rect.x, self.rect.y = next_pos[0] * 40, next_pos[1] * 40 
+
+            if pygame.sprite.spritecollide(self, walls,False):  # Now using `self` instead of `test_rect`
+                print("Collision detected! (Ghost)")
+    
 
         self.animation_state()  
 

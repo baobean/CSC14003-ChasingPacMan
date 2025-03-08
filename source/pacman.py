@@ -37,7 +37,8 @@ class Pacman(pygame.sprite.Sprite):
 
     def update(self, walls, ghosts):
         keys = pygame.key.get_pressed()
-        moved = False 
+        moved = False
+        collide = False
 
         new_x, new_y = self.rect.x, self.rect.y
 
@@ -57,9 +58,6 @@ class Pacman(pygame.sprite.Sprite):
             new_y += self.speed
             self.direction = "down"
             moved = True
-
-        if moved:
-            self.animation_state()  
         
         old_x, old_y = self.rect.x, self.rect.y
         self.rect.topleft = (new_x, new_y)
@@ -67,6 +65,10 @@ class Pacman(pygame.sprite.Sprite):
         if pygame.sprite.spritecollide(self, walls,False):  # Now using `self` instead of `test_rect`
             print("Collision detected! Pac-Man cannot move.")
             self.rect.topleft = (old_x, old_y) 
+            collide = True
+
+        if moved and not collide:
+             self.animation_state()
 
         # Check for collision with ghosts
         if pygame.sprite.spritecollide(self, ghosts, False):

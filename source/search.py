@@ -78,7 +78,7 @@ def dfs_algorithm(map_state, positions):
             execution_time = time.time() - start_time  # Compute elapsed time
             memory_usage = tracemalloc.get_traced_memory()[1]  # Peak memory usage
             tracemalloc.stop()
-            return path[::-1][0] if path else start, execution_time, expanded_nodes, memory_usage
+            return path[::-1][0] if path else start, expanded_nodes, memory_usage
 
         for dx, dy in [(-1, 0), (0, -1), (1, 0), (0, 1)]:
             next_pos = (current_pos[0] + dx, current_pos[1] + dy)
@@ -90,7 +90,7 @@ def dfs_algorithm(map_state, positions):
     execution_time = time.time() - start_time  # Compute elapsed time
     memory_usage = tracemalloc.get_traced_memory()[1]  # Peak memory usage
     tracemalloc.stop()
-    return (-1, -1)
+    return (-1, -1), expanded_nodes, memory_usage
 
 def ucs_algorithm(map_state, positions):
     """Uniform-Cost Search for a specific ghost, avoiding other ghosts"""
@@ -126,11 +126,13 @@ def ucs_algorithm(map_state, positions):
             memory_usage = tracemalloc.get_traced_memory()[1]  # Peak memory usage
             tracemalloc.stop()
 
-            return path[::-1][0] if path else start, execution_time, expanded_nodes, memory_usage
+            return path[::-1][0] if path else start, expanded_nodes, memory_usage
 
         for dx, dy in [(-1, 0), (0, -1), (1, 0), (0, 1)]:  # Left → Up → Right → Down
             next_pos = (current[0] + dx, current[1] + dy)
-            new_cost = cost + map_state[next_pos[0]][next_pos[1]]  # Each move has cost = 1
+            new_cost = cost
+            if map_state[next_pos[0]][next_pos[1]]:
+                new_cost = cost + map_state[next_pos[0]][next_pos[1]]  # Each move has cost = 1
 
             if (0 <= next_pos[0] < len(map_state) and 
                 0 <= next_pos[1] < len(map_state[0]) and 
@@ -146,7 +148,7 @@ def ucs_algorithm(map_state, positions):
     memory_usage = tracemalloc.get_traced_memory()[1]
     tracemalloc.stop()
 
-    return (-1, -1), execution_time, expanded_nodes, memory_usage  # No path found
+    return (-1, -1), expanded_nodes, memory_usage  # No path found
 
 def dls(curr_pos, goal, depth, map_state, other_ghosts, visited, parent):
     # Depth-Limited Search (DLS) function
@@ -196,7 +198,7 @@ def ids_algorithm(map_state, positions):
             execution_time = time.time() - start_time  # Compute elapsed time
             memory_usage = tracemalloc.get_traced_memory()[1]  # Peak memory usage
             tracemalloc.stop()
-            return path[::-1][0] if path else start, execution_time, expanded_nodes, memory_usage
+            return path[::-1][0] if path else start, expanded_nodes, memory_usage
         depth += 1
 
         # If depth exceeds a reasonable limit, break to prevent infinite loop
@@ -206,7 +208,7 @@ def ids_algorithm(map_state, positions):
     execution_time = time.time() - start_time  # Compute elapsed time
     memory_usage = tracemalloc.get_traced_memory()[1]  # Peak memory usage
     tracemalloc.stop()
-    return (-1, -1), execution_time, expanded_nodes, memory_usage
+    return (-1, -1), expanded_nodes, memory_usage
     
 def astar_algorithm(map_state, positions):
     start = positions["ghost"]
@@ -235,13 +237,13 @@ def astar_algorithm(map_state, positions):
             memory_usage = tracemalloc.get_traced_memory()[1]
             tracemalloc.stop()
 
-            return path[::-1][0] if path else start, execution_time, expanded_nodes, memory_usage
+            return path[::-1][0] if path else start, expanded_nodes, memory_usage
         
         for dx, dy in [(-1, 0), (0, -1), (1, 0), (0, 1)]:
             next_pos = (current[0] + dx, current[1] + dy)
             new_cost = cost_so_far[current] + 1
 
-            if next_pos in other_ghosts and map_state[next_pos[1]][next_pos[0]] != 0:
+            if next_pos in other_ghosts and map_state[next_pos[0]][next_pos[1]] != 0: 
                 continue
 
             if next_pos not in cost_so_far or new_cost < cost_so_far[next_pos]:
@@ -254,4 +256,4 @@ def astar_algorithm(map_state, positions):
     memory_usage = tracemalloc.get_traced_memory()[1]
     tracemalloc.stop()
 
-    return (-1, -1), execution_time, expanded_nodes, memory_usage
+    return (-1, -1), expanded_nodes, memory_usage
