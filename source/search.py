@@ -17,7 +17,6 @@ def bfs_algorithm(map_state, positions):
     # Set things up for tracking
     expanded_nodes = 0  
     tracemalloc.start()  
-    start_time = time.time() 
 
     while queue:
         current = queue.popleft()
@@ -35,15 +34,14 @@ def bfs_algorithm(map_state, positions):
 
             return path[::-1][0] if path else start, expanded_nodes, memory_usage
 
-        for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+        for dx, dy in [(-1, 0), (0, -1), (1, 0), (0, 1)]:
             next_pos = (current[0] + dx, current[1] + dy)
 
-            if next_pos not in visited and map_state[next_pos[0]][next_pos[1]] == 0 and next_pos not in other_ghosts:
+            if 0 <= next_pos[0] < len(map_state[0]) and 0 <= next_pos[1] < len(map_state) and next_pos not in visited and map_state[next_pos[1]][next_pos[0]] != float('inf') and next_pos not in other_ghosts:
                 queue.append(next_pos)
                 visited.add(next_pos)
                 parent[next_pos] = current
 
-    execution_time = time.time() - start_time
     memory_usage = tracemalloc.get_traced_memory()[1]
     tracemalloc.stop()  # Stop memory tracking
 
