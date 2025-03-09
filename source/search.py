@@ -32,12 +32,22 @@ def bfs_algorithm(map_state, positions):
             memory_usage = tracemalloc.get_traced_memory()[1]
             tracemalloc.stop()
 
-            return path[::-1][0] if path else start, expanded_nodes, memory_usage
+            if path:
+                next_move = path[::-1][0] 
+                if next_move in other_ghosts:
+                    next_move = start
+            else:
+                next_move = (-1, -1)
+
+            return next_move, expanded_nodes, memory_usage
 
         for dx, dy in [(-1, 0), (0, -1), (1, 0), (0, 1)]:
             next_pos = (current[0] + dx, current[1] + dy)
 
-            if 0 <= next_pos[0] < len(map_state[0]) and 0 <= next_pos[1] < len(map_state) and next_pos not in visited and map_state[next_pos[1]][next_pos[0]] != float('inf') and next_pos not in other_ghosts:
+            if map_state[next_pos[1]][next_pos[0]] == float('inf'): 
+                continue
+
+            if next_pos not in visited:
                 queue.append(next_pos)
                 visited.add(next_pos)
                 parent[next_pos] = current
@@ -45,6 +55,7 @@ def bfs_algorithm(map_state, positions):
     memory_usage = tracemalloc.get_traced_memory()[1]
     tracemalloc.stop()  # Stop memory tracking
 
+    print("bfs failed")
     return (-1, -1), expanded_nodes, memory_usage  # No path found
 
 #DFS algorithm, return a path from current position to goal and expanded_nodes

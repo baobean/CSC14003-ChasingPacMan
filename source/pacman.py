@@ -4,9 +4,9 @@ class Pacman(pygame.sprite.Sprite):
     def __init__(self, position):
         super().__init__()
         pacman_open_1 = pygame.image.load('assets/pacman/pacman_1.png').convert_alpha()
-        pacman_open_1 = pygame.transform.scale2x(pacman_open_1)
+        # pacman_open_1 = pygame.transform.scale2x(pacman_open_1)
         pacman_open_2 = pygame.image.load('assets/pacman/pacman_2.png').convert_alpha()
-        pacman_open_2 = pygame.transform.scale2x(pacman_open_2)
+        # pacman_open_2 = pygame.transform.scale2x(pacman_open_2)
         pacman_closed = pygame.image.load('assets/pacman/pacman_3.png').convert_alpha()
         pacman_closed = pygame.transform.scale2x(pacman_closed)
         self.pacman_open = [pacman_open_1, pacman_open_2]

@@ -4,13 +4,14 @@ from pacman import Pacman
 from ghost import Ghost
 from wall import Wall
 import numpy as np
+import utils
 
 class Game:
     def __init__(self, map_file="map.csv"):
         pygame.init()
-        self.tile_size = 40
-        self.screen_width = 10 * self.tile_size
-        self.screen_height = 10 * self.tile_size
+        self.tile_size = utils.tile_size
+        self.screen_width = 28 * self.tile_size
+        self.screen_height = 31 * self.tile_size
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
         pygame.display.set_caption("Pac-Man AI")
 
@@ -141,8 +142,8 @@ class Game:
                     )
 
                 # ✅ Draw tile numbers to check alignment
-                tile_text = font.render(str(tile), True, (255, 255, 255))
-                self.screen.blit(tile_text, (x * self.tile_size + 10, y * self.tile_size + 10))
+                # tile_text = font.render(str(tile), True, (255, 255, 255))
+                # self.screen.blit(tile_text, (x * self.tile_size + 10, y * self.tile_size + 10))
 
         # ✅ Draw grid lines for verification
         for x in range(0, self.screen_width, self.tile_size):
@@ -189,6 +190,7 @@ class Game:
                 }
 
                 ghost.update(self.walls, self.map_state, positions)
+                all_ghosts_positions[i] = (ghost.rect.x // self.tile_size, ghost.rect.y // self.tile_size)
 
             # Process events
             for event in pygame.event.get():

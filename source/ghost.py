@@ -1,6 +1,8 @@
 import pygame
 #from search import bfs_algorithm, ids_algorithm, ucs_algorithm, astar_algorithm
 import search
+import utils
+
 class Ghost(pygame.sprite.Sprite):
     def __init__(self, ghost_type, position):
         super().__init__()
@@ -25,7 +27,7 @@ class Ghost(pygame.sprite.Sprite):
             for j in range(1, 3):  # Two images per direction
                 image_path = f'assets/ghost/{ghost_type.lower()}_{i}.{j}.png'
                 frame = pygame.image.load(image_path).convert_alpha()
-                frame = pygame.transform.scale2x(frame)
+                # frame = pygame.transform.scale2x(frame)
                 frames[direction].append(frame)
 
         return frames  # Return dictionary of animations
@@ -33,9 +35,9 @@ class Ghost(pygame.sprite.Sprite):
     def assign_algorithm(self, ghost_type):
         """Assign the correct search algorithm to the ghost"""
         if ghost_type == "Blue":
-            return search.ids_algorithm  # Depth-First Search
-        elif ghost_type == "Pink":
             return search.bfs_algorithm  # Breadth-First Search
+        elif ghost_type == "Pink":
+            return search.ids_algorithm  # Depth-First Search 
         elif ghost_type == "Orange":
             return search.ucs_algorithm  # Uniform-Cost Search
         elif ghost_type == "Red":
@@ -74,7 +76,7 @@ class Ghost(pygame.sprite.Sprite):
 
             if isinstance(next_pos, tuple) and len(next_pos) == 2:  # Ensure next_pos is a valid (x, y) tuple
                 self.direction = self.determine_direction(next_pos)
-                self.rect.x, self.rect.y = next_pos[0] * 40, next_pos[1] * 40 
+                self.rect.x, self.rect.y = next_pos[0] * utils.tile_size, next_pos[1] * utils.tile_size
 
             if pygame.sprite.spritecollide(self, walls,False):  # Now using `self` instead of `test_rect`
                 print("Collision detected! (Ghost)")
