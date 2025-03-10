@@ -15,7 +15,7 @@ class Ghost(pygame.sprite.Sprite):
         self.direction = "right"  # Default direction
         self.image = self.frames["right"][0]  # Set initial frame
         self.rect = self.image.get_rect(topleft=position)
-        self.speed = 3  # Adjust speed if needed
+        self.speed = 4  # Adjust speed if needed
         
 
     def load_frames(self, ghost_type):

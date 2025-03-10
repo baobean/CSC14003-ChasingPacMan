@@ -208,7 +208,7 @@ class Game:
                 if event.type == pygame.QUIT:
                     running = False
 
-            self.pacman.update(self.walls, self.ghosts, self.map_state)
+            self.pacman.update(self.walls, self.ghosts)
 
             # Draw sprites
             self.pacman.draw(self.screen)  # Draw Pac-Man
