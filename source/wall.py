@@ -11,8 +11,7 @@ def initialize_walls():
 
     for type in initial_types:
         image_path = f'assets/walls/{type.lower()}.png'
-        image = pygame.image.load(image_path).convert_alpha()
-        wall_images[type] = pygame.transform.scale(image, (utils.tile_size, utils.tile_size))
+        wall_images[type] = pygame.image.load(image_path).convert_alpha()
 
     for i, type in enumerate(["right", "bottom", "left"]):
         wall_images[type] = pygame.transform.rotate(wall_images["top"], (i + 1) * (-90))

@@ -3,6 +3,7 @@ import csv
 from pacman import Pacman
 from ghost import Ghost
 import wall
+from food import Food
 import numpy as np
 import utils
 
@@ -18,14 +19,14 @@ class Game:
         self.clock = pygame.time.Clock()
 
         wall.wall_images = wall.initialize_walls()
-
+        self.food = pygame.sprite.Group()  # Initialize food group
         # Load map and get Pac-Man & Ghosts' positions
         self.map_state, pacman_pos, ghost_positions = self.load_map(map_file)
 
         # Create Pac-Man and Ghosts with correct positions
         self.pacman = pygame.sprite.GroupSingle(self.create_pacman())
         self.ghosts = pygame.sprite.Group(*self.create_ghosts()) 
-
+        
 
         # Assign correct map weights using detected positions
         self.map_state = self.assign_weights(self.map_state, pacman_pos, ghost_positions)
@@ -47,7 +48,6 @@ class Game:
         self.walls = pygame.sprite.Group()  # Initialize walls group
 
 
-
         for y, row in enumerate(map_data):
             for x, tile in enumerate(row):
                 if tile == 1:  # Wall
@@ -62,6 +62,8 @@ class Game:
                 elif tile in {2, 3, 4, 5}:  # Ghosts (different colors)
                     ghost_positions.append((x, y))
                     print(f"Ghost found at: {x, y}")
+                elif tile == 0:
+                    self.food.add(Food("pellet", (x * self.tile_size, y * self.tile_size), self.tile_size))
 
         return np.array(map_data), pacman_pos, ghost_positions
 
@@ -174,6 +176,7 @@ class Game:
         while running:
             self.screen.fill((0, 0, 0))
             self.walls.draw(self.screen)
+            self.food.draw(self.screen)
             # self.draw_map()
 
             # Get all positions for pathfinding
