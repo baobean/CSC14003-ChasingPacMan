@@ -61,7 +61,7 @@ class Game:
                     print(f"Pac-Man found at: {pacman_pos}")
                 elif tile in {2, 3, 4, 5}:  # Ghosts (different colors)
                     ghost_positions.append((x, y))
-                    print(f"Ghost found at: {x, y}")
+                    self.food.add(Food("pellet", (x * self.tile_size, y * self.tile_size), self.tile_size))
                 elif tile == 0:
                     self.food.add(Food("pellet", (x * self.tile_size, y * self.tile_size), self.tile_size))
 
@@ -169,6 +169,10 @@ class Game:
     #                     (x * self.tile_size, y * self.tile_size, self.tile_size, self.tile_size)
     #                 )
 
+    def check_collisions(self):
+        """Check if Pacman collides with any food"""
+        eaten_food = pygame.sprite.spritecollide(self.pacman.sprite, self.food, True)
+
     def run(self):
         """Main game loop"""
         running = True
@@ -209,12 +213,13 @@ class Game:
                     running = False
 
             self.pacman.update(self.walls, self.ghosts)
+            self.check_collisions()
 
             # Draw sprites
             self.pacman.draw(self.screen)  # Draw Pac-Man
             self.ghosts.draw(self.screen)  # Draw all ghosts
 
             pygame.display.flip()
-            self.clock.tick(2)
+            self.clock.tick(10)
 
         pygame.quit()
