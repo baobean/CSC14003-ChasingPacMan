@@ -1,4 +1,5 @@
 import pygame
+import math
 
 class Pacman(pygame.sprite.Sprite):
     def __init__(self, position):
@@ -27,33 +28,42 @@ class Pacman(pygame.sprite.Sprite):
         self.pacman_index = 0
         self.image = self.sprites[self.direction][int(self.pacman_index)]
         self.rect = self.image.get_rect(topleft=position)
-        self.speed = 3  
+        self.speed = 5
         self.grid_size = 16  # Adjust based on map tile size
+
+        print(type(self.image))
+        print(type(self.rect))
 
     def animation_state(self):
         self.pacman_index = (self.pacman_index + 0.5) % 2  
         self.image = self.sprites[self.direction][int(self.pacman_index)]  
 
-    def can_move(self, direction, walls):
+    def can_move(self, direction, walls, map_state):
+        collision = False
         """Check if Pac-Man can move in the given direction."""
-        test_sprite = pygame.sprite.Sprite()  # Create a temporary sprite
-        test_sprite.rect = self.rect.copy()  # Copy Pac-Man's current position
+        temp_sprite = self.rect.copy()
+        temp_sprite.center = self.rect.center  # Copy Pac-Man's current position
+
+        temp_sprite_x = round(temp_sprite.centerx // self.grid_size)
+        temp_sprite_y = round(temp_sprite.centery // self.grid_size)
+
+        next_x, next_y = temp_sprite_x, temp_sprite_y
 
         if direction == "left":
-            test_sprite.rect.x -= self.speed
+            next_x -= 1
         elif direction == "right":
-            test_sprite.rect.x += self.speed
+            next_x += 1
         elif direction == "up":
-            test_sprite.rect.y -= self.speed
+            next_y -= 1
         elif direction == "down":
-            test_sprite.rect.y += self.speed
+            next_y += 1
 
-        # Check if test_sprite collides with any wall
-        collision = pygame.sprite.spritecollideany(test_sprite, walls)
+        if map_state[next_y][next_x] == float('inf'):
+            collision = True
         
-        print(f"Trying to move {direction}: {'Blocked' if collision else 'Clear'} at {test_sprite.rect.topleft}")
+        print(f"Trying to move {direction}: {'Blocked' if collision else 'Clear'} at {next_x}, {next_y}")
         
-        return collision is None
+        return not collision
 
     def handle_input(self):
         """Check user input and update intended direction."""
@@ -71,15 +81,15 @@ class Pacman(pygame.sprite.Sprite):
             self.intended_direction = "down"
             print("Down key pressed")
 
-    def update(self, walls, ghosts):
+    def update(self, walls, ghosts, map_state):
         self.handle_input()
 
         # If the intended direction is possible, switch to it
-        if self.can_move(self.intended_direction, walls):
+        if self.can_move(self.intended_direction, walls, map_state):
             self.direction = self.intended_direction  
 
         # Try to move in the current direction
-        if self.can_move(self.direction, walls):
+        if self.can_move(self.direction, walls, map_state):
             if self.direction == "left":
                 self.rect.x -= self.speed
             elif self.direction == "right":
