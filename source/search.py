@@ -70,7 +70,7 @@ def dls(curr_pos, goal, depth, map_state, other_ghosts, visited, parent):
         for dx, dy in [(-1, 0), (0, -1), (1, 0), (0, 1)]:
             next_pos = (curr_pos[0] + dx, curr_pos[1] + dy)
             # Check if the next position is valid and not visited
-            if  0 <= next_pos[0] < len(map_state[0]) and 0 <= next_pos[1] < len(map_state) and next_pos not in visited and next_pos not in other_ghosts and map_state[next_pos[1]][next_pos[0]] != float('inf'):
+            if next_pos not in visited and map_state[next_pos[1]][next_pos[0]] != float('inf'):
                 parent[next_pos] = curr_pos
                 # Recursive call to DLS with decremented depth
                 found = dls(next_pos, goal, depth - 1, map_state, other_ghosts, visited, parent)
