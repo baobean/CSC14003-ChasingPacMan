@@ -10,8 +10,8 @@ class Game:
     def __init__(self, map_file="map.csv"):
         pygame.init()
         self.tile_size = utils.tile_size
-        self.screen_width = 28 * self.tile_size
-        self.screen_height = 31 * self.tile_size
+        self.screen_width = utils.map_width * self.tile_size
+        self.screen_height = utils.map_height * self.tile_size
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
         pygame.display.set_caption("Pac-Man AI")
 
@@ -80,7 +80,7 @@ class Game:
                 elif (i, j) in ghost_positions:
                     weight_map[i][j] = 0  # Ghost starting positions
 
-                elif cell in wall.wall_types or cell == 1:  # Walls
+                elif cell in wall.wall_types:  # Walls
                     weight_map[i][j] = float('inf')
                 elif cell == 0:  # Walkable paths
                     weight = 1  # Default cost
@@ -108,8 +108,6 @@ class Game:
                     weight_map[i][j] = 1  # Default cost
 
         return weight_map
-
-
 
     def create_pacman(self):
         pacman_position = None
@@ -197,8 +195,10 @@ class Game:
                     "ghost": ghost_pos  # The specific ghost moving
                 }
 
-                ghost.update(self.walls, self.map_state, positions)
-                all_ghosts_positions[i] = (ghost.rect.x // self.tile_size, ghost.rect.y // self.tile_size)
+                if ghost.update(self.walls, self.map_state, positions) == True:
+                    self.ghosts.remove(ghost)
+                else:
+                    all_ghosts_positions[i] = (ghost.rect.x // self.tile_size, ghost.rect.y // self.tile_size)
 
             # Process events
             for event in pygame.event.get():
@@ -212,6 +212,6 @@ class Game:
             self.ghosts.draw(self.screen)  # Draw all ghosts
 
             pygame.display.flip()
-            self.clock.tick(1)
+            self.clock.tick(2)
 
         pygame.quit()

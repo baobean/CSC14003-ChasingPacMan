@@ -71,6 +71,8 @@ class Ghost(pygame.sprite.Sprite):
     def update(self, walls, map_state, positions):
         if self.algorithm:
             next_pos, tmp_node, memory_usage = self.algorithm(map_state, positions)
+            if next_pos == positions["pacman"]:
+                return True
 
             print(next_pos)
 
@@ -83,4 +85,5 @@ class Ghost(pygame.sprite.Sprite):
     
 
         self.animation_state()  
+        return False
 

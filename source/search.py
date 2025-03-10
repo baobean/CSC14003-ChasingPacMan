@@ -4,7 +4,7 @@ import tracemalloc
 import time
 
 def bfs_algorithm(map_state, positions):
-    """return the next appropriate move"""
+    """Return the next appropriate move using BFS algorithm"""
 
     start = positions["ghost"]
     goal = positions["pacman"]
@@ -34,10 +34,11 @@ def bfs_algorithm(map_state, positions):
 
             if path:
                 next_move = path[::-1][0] 
-                if next_move in other_ghosts:
-                    next_move = start
-            else:
-                next_move = (-1, -1)
+
+                if next_move in other_ghosts and next_move != goal:
+                    next_move = start # The ghost will stop and wait
+            else: # Ghost is at already at pacman's position
+                next_move = start 
 
             return next_move, expanded_nodes, memory_usage
 
@@ -52,10 +53,9 @@ def bfs_algorithm(map_state, positions):
                 visited.add(next_pos)
                 parent[next_pos] = current
 
+    # BFS failed to find a path
     memory_usage = tracemalloc.get_traced_memory()[1]
     tracemalloc.stop()  # Stop memory tracking
-
-    print("bfs failed")
     return (-1, -1), expanded_nodes, memory_usage  # No path found
 
 

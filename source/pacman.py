@@ -8,7 +8,7 @@ class Pacman(pygame.sprite.Sprite):
         pacman_open_2 = pygame.image.load('assets/pacman/pacman_2.png').convert_alpha()
         # pacman_open_2 = pygame.transform.scale2x(pacman_open_2)
         pacman_closed = pygame.image.load('assets/pacman/pacman_3.png').convert_alpha()
-        pacman_closed = pygame.transform.scale2x(pacman_closed)
+        # pacman_closed = pygame.transform.scale2x(pacman_closed)
         self.pacman_open = [pacman_open_1, pacman_open_2]
         self.pacman_closed = pacman_closed
         self.sprites = {
@@ -29,7 +29,6 @@ class Pacman(pygame.sprite.Sprite):
         self.image = self.sprites[self.direction][int(self.pacman_index)]
         self.rect = self.image.get_rect(topleft=position)
         self.speed = 10
-        
 
     def animation_state(self):
         self.pacman_index = (self.pacman_index + 0.5) % 2  # Only 2 animation frames (open & closed)
@@ -62,13 +61,14 @@ class Pacman(pygame.sprite.Sprite):
         old_x, old_y = self.rect.x, self.rect.y
         self.rect.topleft = (new_x, new_y)
 
-        if pygame.sprite.spritecollide(self, walls,False):  # Now using `self` instead of `test_rect`
+        if pygame.sprite.spritecollide(self, walls, False):  # Now using `self` instead of `test_rect`
             print("Collision detected! Pac-Man cannot move.")
             self.rect.topleft = (old_x, old_y) 
             collide = True
 
-        if moved and not collide:
-             self.animation_state()
+        # if moved and not collide:
+        if not collide:
+            self.animation_state()
 
         # Check for collision with ghosts
         if pygame.sprite.spritecollide(self, ghosts, False):
