@@ -1,9 +1,10 @@
 import pygame
 import csv
+import utils
 
 class Map:
     def __init__(self, file_path="map.csv"):
-        self.tile_size = 40  # Kích thước mỗi ô
+        self.tile_size = utils.tile_size  # Kích thước mỗi ô
         self.map_state = self.load_map(file_path)
         self.width = len(self.map_state[0])
         self.height = len(self.map_state)

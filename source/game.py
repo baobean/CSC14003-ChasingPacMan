@@ -2,7 +2,7 @@ import pygame
 import csv
 from pacman import Pacman
 from ghost import Ghost
-from wall import Wall
+import wall
 import numpy as np
 import utils
 
@@ -17,12 +17,15 @@ class Game:
 
         self.clock = pygame.time.Clock()
 
+        wall.wall_images = wall.initialize_walls()
+
         # Load map and get Pac-Man & Ghosts' positions
         self.map_state, pacman_pos, ghost_positions = self.load_map(map_file)
 
         # Create Pac-Man and Ghosts with correct positions
         self.pacman = pygame.sprite.GroupSingle(self.create_pacman())
         self.ghosts = pygame.sprite.Group(*self.create_ghosts()) 
+
 
         # Assign correct map weights using detected positions
         self.map_state = self.assign_weights(self.map_state, pacman_pos, ghost_positions)
@@ -43,11 +46,16 @@ class Game:
 
         self.walls = pygame.sprite.Group()  # Initialize walls group
 
+
+
         for y, row in enumerate(map_data):
             for x, tile in enumerate(row):
                 if tile == 1:  # Wall
-                    wall = Wall((x * self.tile_size, y * self.tile_size), (self.tile_size, self.tile_size))
-                    self.walls.add(wall)
+                    new_wall = wall.Wall(None, (x * self.tile_size, y * self.tile_size), (self.tile_size, self.tile_size))
+                    self.walls.add(new_wall)
+                elif tile in wall.wall_types: # walls
+                    new_wall = wall.Wall(wall.wall_types[tile], (x * self.tile_size, y * self.tile_size), (self.tile_size, self.tile_size))
+                    self.walls.add(new_wall)
                 elif tile == 6:  # Pac-Man
                     pacman_pos = (x, y)  # Store grid position
                     print(f"Pac-Man found at: {pacman_pos}")
@@ -72,7 +80,7 @@ class Game:
                 elif (i, j) in ghost_positions:
                     weight_map[i][j] = 0  # Ghost starting positions
 
-                elif cell == 1:  # Walls
+                elif cell in wall.wall_types or cell == 1:  # Walls
                     weight_map[i][j] = float('inf')
                 elif cell == 0:  # Walkable paths
                     weight = 1  # Default cost
@@ -126,30 +134,28 @@ class Game:
                     ghosts.append(Ghost(ghost_types[cell], (x * self.tile_size, y * self.tile_size)))
                     print(f"Ghost found at: {x * self.tile_size,y * self.tile_size}") 
         return ghosts
-    def draw_map(self):
-        """Draw the map and overlay grid numbers for debugging"""
-        wall_color = (34, 32, 217)  # Blue for walls
-        font = pygame.font.Font(None, 24)  # Small font for grid numbers
+    # def draw_map(self):
+    #     """Draw the map and overlay grid numbers for debugging"""
+        # wall_color = (34, 32, 217)  # Blue for walls
+        # font = pygame.font.Font(None, 24)  # Small font for grid numbers
 
-        for y in range(len(self.map_state)):
-            for x in range(len(self.map_state[y])):
-                tile = self.map_state[y][x]
+        
 
-                if tile == float('inf'):  # Draw walls
-                    pygame.draw.rect(
-                        self.screen, wall_color,
-                        (x * self.tile_size, y * self.tile_size, self.tile_size, self.tile_size)
-                    )
+        # for y in range(len(self.map_state)):
+        #     for x in range(len(self.map_state[y])):
+        #         tile = self.map_state[y][x]
+
+                
 
                 # ✅ Draw tile numbers to check alignment
                 # tile_text = font.render(str(tile), True, (255, 255, 255))
                 # self.screen.blit(tile_text, (x * self.tile_size + 10, y * self.tile_size + 10))
 
         # ✅ Draw grid lines for verification
-        for x in range(0, self.screen_width, self.tile_size):
-            pygame.draw.line(self.screen, (255, 255, 255), (x, 0), (x, self.screen_height))
-        for y in range(0, self.screen_height, self.tile_size):
-            pygame.draw.line(self.screen, (255, 255, 255), (0, y), (self.screen_width, y))
+        # for x in range(0, self.screen_width, self.tile_size):
+        #     pygame.draw.line(self.screen, (255, 255, 255), (x, 0), (x, self.screen_height))
+        # for y in range(0, self.screen_height, self.tile_size):
+        #     pygame.draw.line(self.screen, (255, 255, 255), (0, y), (self.screen_width, y))
 
 
     # def draw_map(self):
@@ -166,9 +172,11 @@ class Game:
     def run(self):
         """Main game loop"""
         running = True
+        
         while running:
             self.screen.fill((0, 0, 0))
-            self.draw_map()
+            self.walls.draw(self.screen)
+            # self.draw_map()
 
             # Get all positions for pathfinding
             pacman_pos = (self.pacman.sprite.rect.x // self.tile_size, self.pacman.sprite.rect.y // self.tile_size)
