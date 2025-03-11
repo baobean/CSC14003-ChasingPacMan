@@ -46,7 +46,7 @@ class Ghost(pygame.sprite.Sprite):
 
     def determine_direction(self, next_pos):
         """Determines ghost movement direction based on next position."""
-        current_x, current_y = self.rect.x // utils.tile_size, self.rect.y // utils.tile_size  # Get grid-based position
+        current_x, current_y = self.rect.x // utils.tile_size - utils.x_offset, self.rect.y // utils.tile_size - utils.y_offset # Get grid-based position
 
         if isinstance(next_pos, tuple) and len(next_pos) == 2:  # Ensure next_pos is valid
             dx, dy = next_pos[0] - current_x, next_pos[1] - current_y
@@ -74,11 +74,11 @@ class Ghost(pygame.sprite.Sprite):
             if next_pos == positions["pacman"]:
                 return True
 
-            print(next_pos)
+            # print(next_pos)
 
             if isinstance(next_pos, tuple) and len(next_pos) == 2:  # Ensure next_pos is a valid (x, y) tuple
                 self.direction = self.determine_direction(next_pos)
-                self.rect.x, self.rect.y = next_pos[0] * utils.tile_size, next_pos[1] * utils.tile_size
+                self.rect.x, self.rect.y = (next_pos[0] + utils.x_offset) * utils.tile_size, (next_pos[1] + utils.y_offset) * utils.tile_size
 
             if pygame.sprite.spritecollide(self, walls, False):  # Now using `self` instead of `test_rect`
                 print("Collision detected! (Ghost)")

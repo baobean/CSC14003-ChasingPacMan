@@ -1,5 +1,4 @@
 import pygame
-import utils
 
 class Food(pygame.sprite.Sprite):
     food_images = {}

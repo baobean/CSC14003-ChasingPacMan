@@ -4,6 +4,7 @@ from pacman import Pacman
 from ghost import Ghost
 import wall
 from food import Food
+from text_renderer import TextRenderer
 import numpy as np
 import utils
 
@@ -11,13 +12,14 @@ class Game:
     def __init__(self, map_file="map.csv"):
         pygame.init()
         self.tile_size = utils.tile_size
-        self.screen_width = utils.map_width * self.tile_size
-        self.screen_height = utils.map_height * self.tile_size
+        self.screen_width = (utils.map_width + utils.x_offset) * self.tile_size
+        self.screen_height = (utils.map_height + utils.y_offset) * self.tile_size
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
         pygame.display.set_caption("Pac-Man AI")
 
         self.clock = pygame.time.Clock()
 
+        self.text_renderer = TextRenderer()
         wall.wall_images = wall.initialize_walls()
         self.food = pygame.sprite.Group()  # Initialize food group
         # Load map and get Pac-Man & Ghosts' positions
@@ -51,19 +53,19 @@ class Game:
         for y, row in enumerate(map_data):
             for x, tile in enumerate(row):
                 if tile == 1:  # Wall
-                    new_wall = wall.Wall(None, (x * self.tile_size, y * self.tile_size), (self.tile_size, self.tile_size))
+                    new_wall = wall.Wall(None, ((x + utils.x_offset) * self.tile_size, y * self.tile_size), (self.tile_size, self.tile_size))
                     self.walls.add(new_wall)
                 elif tile in wall.wall_types: # walls
-                    new_wall = wall.Wall(wall.wall_types[tile], (x * self.tile_size, y * self.tile_size), (self.tile_size, self.tile_size))
+                    new_wall = wall.Wall(wall.wall_types[tile], ((x + utils.x_offset) * self.tile_size, (y + utils.y_offset) * self.tile_size), (self.tile_size, self.tile_size))
                     self.walls.add(new_wall)
                 elif tile == 6:  # Pac-Man
-                    pacman_pos = (x, y)  # Store grid position
+                    pacman_pos = (x + utils.x_offset, y + utils.y_offset)  # Store grid position
                     print(f"Pac-Man found at: {pacman_pos}")
                 elif tile in {2, 3, 4, 5}:  # Ghosts (different colors)
-                    ghost_positions.append((x, y))
-                    self.food.add(Food("pellet", (x * self.tile_size, y * self.tile_size), self.tile_size))
+                    ghost_positions.append((x + utils.x_offset, y + utils.y_offset))
+                    self.food.add(Food("pellet", ((x + utils.x_offset) * self.tile_size, (y + utils.y_offset) * self.tile_size), self.tile_size))
                 elif tile == 0:
-                    self.food.add(Food("pellet", (x * self.tile_size, y * self.tile_size), self.tile_size))
+                    self.food.add(Food("pellet", ((x + utils.x_offset) * self.tile_size, (y + utils.y_offset) * self.tile_size), self.tile_size))
 
         return np.array(map_data), pacman_pos, ghost_positions
 
@@ -118,6 +120,9 @@ class Game:
         for y, row in enumerate(self.map_state):
             for x, tile in enumerate(row):
                 if tile == 6:
+                    x += utils.x_offset
+                    y += utils.y_offset
+
                     pacman_position = (x * self.tile_size, y * self.tile_size)
                     print(f"Pac-Man found at: {pacman_position}")  # Debugging output
                     break
@@ -131,47 +136,18 @@ class Game:
         for y, row in enumerate(self.map_state):
             for x, cell in enumerate(row):
                 if cell in ghost_types:
+                    x += utils.x_offset
+                    y += utils.y_offset
                     ghosts.append(Ghost(ghost_types[cell], (x * self.tile_size, y * self.tile_size)))
-                    print(f"Ghost found at: {x * self.tile_size,y * self.tile_size}") 
+                    print(f"Ghost found at: {(x - utils.x_offset) * self.tile_size, (y - utils.y_offset) * self.tile_size}") 
         return ghosts
-    # def draw_map(self):
-    #     """Draw the map and overlay grid numbers for debugging"""
-        # wall_color = (34, 32, 217)  # Blue for walls
-        # font = pygame.font.Font(None, 24)  # Small font for grid numbers
-
-        
-
-        # for y in range(len(self.map_state)):
-        #     for x in range(len(self.map_state[y])):
-        #         tile = self.map_state[y][x]
-
-                
-
-                # ✅ Draw tile numbers to check alignment
-                # tile_text = font.render(str(tile), True, (255, 255, 255))
-                # self.screen.blit(tile_text, (x * self.tile_size + 10, y * self.tile_size + 10))
-
-        # ✅ Draw grid lines for verification
-        # for x in range(0, self.screen_width, self.tile_size):
-        #     pygame.draw.line(self.screen, (255, 255, 255), (x, 0), (x, self.screen_height))
-        # for y in range(0, self.screen_height, self.tile_size):
-        #     pygame.draw.line(self.screen, (255, 255, 255), (0, y), (self.screen_width, y))
-
-
-    # def draw_map(self):
-    #     """Draw the game map"""
-    #     wall_color = (34, 32, 217)
-    #     for y in range(len(self.map_state)):
-    #         for x in range(len(self.map_state[y])):
-    #             if self.map_state[y][x] == float('inf'):
-    #                 pygame.draw.rect(
-    #                     self.screen, wall_color,
-    #                     (x * self.tile_size, y * self.tile_size, self.tile_size, self.tile_size)
-    #                 )
 
     def check_collisions(self):
         """Check if Pacman collides with any food"""
         eaten_food = pygame.sprite.spritecollide(self.pacman.sprite, self.food, True)
+        if eaten_food:
+            self.pacman.sprite.score += 100
+    
 
     def run(self):
         """Main game loop"""
@@ -181,16 +157,20 @@ class Game:
             self.screen.fill((0, 0, 0))
             self.walls.draw(self.screen)
             self.food.draw(self.screen)
+            current_score = self.pacman.sprite.score
+            self.text_renderer.render_text(self.screen, f"SCORE - {current_score}", 10, 10)
+
+
             # self.draw_map()
 
             # Get all positions for pathfinding
-            pacman_pos = (self.pacman.sprite.rect.x // self.tile_size, self.pacman.sprite.rect.y // self.tile_size)
+            pacman_pos = (self.pacman.sprite.rect.x // self.tile_size - utils.x_offset, self.pacman.sprite.rect.y // self.tile_size - utils.y_offset)
             # Get all ghost positions
-            all_ghosts_positions = [(ghost.rect.x // self.tile_size, ghost.rect.y // self.tile_size) for ghost in self.ghosts]
+            all_ghosts_positions = [(ghost.rect.x // self.tile_size - utils.x_offset, ghost.rect.y // self.tile_size - utils.y_offset) for ghost in self.ghosts]
 
             # Update each ghost
             for i, ghost in enumerate(self.ghosts):
-                ghost_pos = (ghost.rect.x // self.tile_size, ghost.rect.y // self.tile_size)
+                ghost_pos = (ghost.rect.x // self.tile_size - utils.x_offset, ghost.rect.y // self.tile_size - utils.y_offset)
                 print(f"Ghost at {ghost_pos}, Tile Value: {self.map_state[ghost_pos[1]][ghost_pos[0]]}")
 
                 # Copy list and remove only the current ghost at index i
@@ -205,7 +185,7 @@ class Game:
                 if ghost.update(self.walls, self.map_state, positions) == True:
                     self.ghosts.remove(ghost)
                 else:
-                    all_ghosts_positions[i] = (ghost.rect.x // self.tile_size, ghost.rect.y // self.tile_size)
+                    all_ghosts_positions[i] = (ghost.rect.x // self.tile_size - utils.x_offset, ghost.rect.y // self.tile_size - utils.y_offset)
 
             # Process events
             for event in pygame.event.get():
