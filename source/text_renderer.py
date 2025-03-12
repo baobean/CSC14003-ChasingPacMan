@@ -29,8 +29,11 @@ class TextRenderer:
 
         return char_map
     
-    def render_text(self, surface, text, pos_x, pos_y, spacing = 1):
+    def render_text(self, surface, text, pos_x, pos_y, centered = False):
         x_offset = pos_x
+        spacing = 1
+        if centered:
+            x_offset = (surface.get_width() - self.get_length(text, spacing)) // 2
 
         for char in text:
             if char in self.char_map:
@@ -39,4 +42,7 @@ class TextRenderer:
                 x_offset += self.char_width + spacing
             elif char == ' ':
                 x_offset += self.char_width + spacing
+
+    def get_length(self, text, spacing):
+        return len(text) * self.char_width + (len(text) - 1) * spacing
 

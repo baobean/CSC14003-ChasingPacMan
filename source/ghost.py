@@ -71,19 +71,13 @@ class Ghost(pygame.sprite.Sprite):
     def update(self, walls, map_state, positions):
         if self.algorithm:
             next_pos, tmp_node, memory_usage = self.algorithm(map_state, positions)
-            if next_pos == positions["pacman"]:
-                return True
-
-            # print(next_pos)
-
+            
             if isinstance(next_pos, tuple) and len(next_pos) == 2:  # Ensure next_pos is a valid (x, y) tuple
                 self.direction = self.determine_direction(next_pos)
                 self.rect.x, self.rect.y = (next_pos[0] + utils.x_offset) * utils.tile_size, (next_pos[1] + utils.y_offset) * utils.tile_size
 
-            if pygame.sprite.spritecollide(self, walls, False):  # Now using `self` instead of `test_rect`
-                print("Collision detected! (Ghost)")
+            # if pygame.sprite.spritecollide(self, walls, False):  # Now using `self` instead of `test_rect`
+            #     print("Collision detected! (Ghost)")
     
 
         self.animation_state()  
-        return False
-

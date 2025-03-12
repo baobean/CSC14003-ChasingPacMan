@@ -7,10 +7,14 @@ from food import Food
 from text_renderer import TextRenderer
 import numpy as np
 import utils
+import sys
 
 class Game:
     def __init__(self, map_file="map.csv"):
         pygame.init()
+        self.level = 1
+        self.ending = False
+        self.current_scene = "intro"
         self.tile_size = utils.tile_size
         self.screen_width = (utils.map_width + utils.x_offset) * self.tile_size
         self.screen_height = (utils.map_height + utils.y_offset) * self.tile_size
@@ -147,59 +151,111 @@ class Game:
         eaten_food = pygame.sprite.spritecollide(self.pacman.sprite, self.food, True)
         if eaten_food:
             self.pacman.sprite.score += 100
+        pacman_touched = pygame.sprite.spritecollide(self.pacman.sprite, self.ghosts, False)
+        if pacman_touched:
+            self.current_scene = "ending"
+            current_screen = self.capture_screen()
+            self.pacman.sprite.score = 0
+            self.ending_scene(current_screen)
+
     
+    def game_scene(self):
+        self.screen.fill((0, 0, 0))
+        self.walls.draw(self.screen)
+        self.food.draw(self.screen)
+        current_score = self.pacman.sprite.score
+        self.text_renderer.render_text(self.screen, f"SCORE - {current_score}", 10, 10)
+
+        # Draw sprites
+        self.pacman.draw(self.screen)  # Draw Pac-Man
+        self.ghosts.draw(self.screen)  # Draw all ghosts
+
+        # Get all positions for pathfinding
+        pacman_pos = (self.pacman.sprite.rect.x // self.tile_size - utils.x_offset, self.pacman.sprite.rect.y // self.tile_size - utils.y_offset)
+        # Get all ghost positions
+        all_ghosts_positions = [(ghost.rect.x // self.tile_size - utils.x_offset, ghost.rect.y // self.tile_size - utils.y_offset) for ghost in self.ghosts]
+
+        # Update each ghost
+        for i, ghost in enumerate(self.ghosts):
+            ghost_pos = (ghost.rect.x // self.tile_size - utils.x_offset, ghost.rect.y // self.tile_size - utils.y_offset)
+            # print(f"Ghost at {ghost_pos}, Tile Value: {self.map_state[ghost_pos[1]][ghost_pos[0]]}")
+
+            # Copy list and remove only the current ghost at index i
+            other_ghosts_positions = all_ghosts_positions[:i] + all_ghosts_positions[i+1:]
+
+            positions = {
+                "pacman": pacman_pos,
+                "ghosts": other_ghosts_positions,  # Other ghosts except the one moving
+                "ghost": ghost_pos  # The specific ghost moving
+            }
+
+            ghost.update(self.walls, self.map_state, positions)
+            all_ghosts_positions[i] = (ghost.rect.x // self.tile_size - utils.x_offset, ghost.rect.y // self.tile_size - utils.y_offset)
+
+        # Process events
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+        self.pacman.update(self.walls, self.ghosts)
+        self.check_collisions()            
+
+        pygame.display.flip()
+        self.clock.tick(7.5)
+
+    def capture_screen(self):
+        screen_copy = pygame.display.get_surface().copy()
+        return screen_copy
+    
+    def ending_scene(self, current_screen):
+        countdown = 3
+
+        while countdown > 0:
+            self.screen.fill((0, 0, 0))
+            self.screen.blit(current_screen, (0, 0))
+            self.text_renderer.render_text(self.screen, f"GO BACK TO LOBBY IN {countdown}", 100, 100, True)
+            pygame.display.flip()
+            pygame.time.delay(1000)
+            countdown -= 1
+
+        self.current_scene = "intro"
+
+    def intro_scene(self):
+        """Intro screen with level selection"""
+        self.screen.fill((0, 0, 0))
+        self.text_renderer.render_text(self.screen, "CHOOSE LEVEL", 100, 100, True)
+
+        for i in range(1, 7):
+            self.text_renderer.render_text(self.screen, f"LEVEL {i}", 200, 150 + i * 25, True)
+
+        self.text_renderer.render_text(self.screen, ">", 100, 150 + self.level * 25)
+
+        pygame.display.flip()
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_DOWN:
+                    self.level = self.level + 1 if self.level < 6 else 1
+                elif event.key == pygame.K_UP:
+                    self.level = self.level - 1 if self.level > 1 else 6
+                elif event.key == pygame.K_RETURN:
+                    self.current_scene = "game"      
+                    return     
 
     def run(self):
         """Main game loop"""
-        running = True
         
-        while running:
-            self.screen.fill((0, 0, 0))
-            self.walls.draw(self.screen)
-            self.food.draw(self.screen)
-            current_score = self.pacman.sprite.score
-            self.text_renderer.render_text(self.screen, f"SCORE - {current_score}", 10, 10)
-
-
-            # self.draw_map()
-
-            # Get all positions for pathfinding
-            pacman_pos = (self.pacman.sprite.rect.x // self.tile_size - utils.x_offset, self.pacman.sprite.rect.y // self.tile_size - utils.y_offset)
-            # Get all ghost positions
-            all_ghosts_positions = [(ghost.rect.x // self.tile_size - utils.x_offset, ghost.rect.y // self.tile_size - utils.y_offset) for ghost in self.ghosts]
-
-            # Update each ghost
-            for i, ghost in enumerate(self.ghosts):
-                ghost_pos = (ghost.rect.x // self.tile_size - utils.x_offset, ghost.rect.y // self.tile_size - utils.y_offset)
-                print(f"Ghost at {ghost_pos}, Tile Value: {self.map_state[ghost_pos[1]][ghost_pos[0]]}")
-
-                # Copy list and remove only the current ghost at index i
-                other_ghosts_positions = all_ghosts_positions[:i] + all_ghosts_positions[i+1:]
-
-                positions = {
-                    "pacman": pacman_pos,
-                    "ghosts": other_ghosts_positions,  # Other ghosts except the one moving
-                    "ghost": ghost_pos  # The specific ghost moving
-                }
-
-                if ghost.update(self.walls, self.map_state, positions) == True:
-                    self.ghosts.remove(ghost)
-                else:
-                    all_ghosts_positions[i] = (ghost.rect.x // self.tile_size - utils.x_offset, ghost.rect.y // self.tile_size - utils.y_offset)
-
-            # Process events
+        while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    running = False
+                    pygame.quit()
+                    sys.exit()
 
-            self.pacman.update(self.walls, self.ghosts)
-            self.check_collisions()
-
-            # Draw sprites
-            self.pacman.draw(self.screen)  # Draw Pac-Man
-            self.ghosts.draw(self.screen)  # Draw all ghosts
-
-            pygame.display.flip()
-            self.clock.tick(10)
-
-        pygame.quit()
+            if self.current_scene == 'intro':
+                self.intro_scene()
+            elif self.current_scene == 'game':
+                self.game_scene()

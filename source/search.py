@@ -20,7 +20,6 @@ def bfs_algorithm(map_state, positions):
 
     while queue:
         current = queue.popleft()
-
         expanded_nodes += 1
 
         if current == goal:
@@ -191,7 +190,6 @@ def astar_algorithm(map_state, positions):
 
     expanded_nodes = 0
     tracemalloc.start()
-    start_time = time.time()
 
     while pq:
         cost, current = heapq.heappop(pq)
@@ -203,17 +201,24 @@ def astar_algorithm(map_state, positions):
                 path.append(current)
                 current = parent[current]
 
-            execution_time = time.time() - start_time
             memory_usage = tracemalloc.get_traced_memory()[1]
             tracemalloc.stop()
 
-            return path[::-1][0] if path else start, expanded_nodes, memory_usage
+            if path:
+                next_move = path[::-1][0] 
+
+                if next_move in other_ghosts and next_move != goal:
+                    next_move = start # The ghost will stop and wait
+            else: # Ghost is at already at pacman's position
+                next_move = start 
+
+            return next_move, expanded_nodes, memory_usage
         
         for dx, dy in [(-1, 0), (0, -1), (1, 0), (0, 1)]:
             next_pos = (current[0] + dx, current[1] + dy)
             new_cost = cost_so_far[current] + 1
 
-            if next_pos in other_ghosts and map_state[next_pos[0]][next_pos[1]] != 0: 
+            if map_state[next_pos[1]][next_pos[0]] == float('inf'): 
                 continue
 
             if next_pos not in cost_so_far or new_cost < cost_so_far[next_pos]:
@@ -222,7 +227,6 @@ def astar_algorithm(map_state, positions):
                 heapq.heappush(pq, (priority, next_pos))
                 parent[next_pos] = current
 
-    execution_time = time.time() - start_time
     memory_usage = tracemalloc.get_traced_memory()[1]
     tracemalloc.stop()
 
