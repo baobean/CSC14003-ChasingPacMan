@@ -185,7 +185,7 @@ def astar_algorithm(map_state, positions):
     goal = positions["pacman"]
     other_ghosts = set(positions["ghosts"])
 
-    pq = [(0, start)]
+    pq = [(0, 0, start)]
     parent = {}
     cost_so_far = {start: 0}
 
@@ -194,8 +194,9 @@ def astar_algorithm(map_state, positions):
     start_time = time.time()
 
     while pq:
-        cost, current = heapq.heappop(pq)
+        expected_cost, true_cost, current = heapq.heappop(pq)
         expanded_nodes += 1
+        cost_so_far[current] = true_cost
 
         if current == goal:
             path = []
@@ -213,13 +214,12 @@ def astar_algorithm(map_state, positions):
             next_pos = (current[0] + dx, current[1] + dy)
             new_cost = cost_so_far[current] + 1
 
-            if next_pos in other_ghosts and map_state[next_pos[0]][next_pos[1]] != 0: 
+            if next_pos in other_ghosts or map_state[next_pos[1]][next_pos[0]] == float('inf'): 
                 continue
 
-            if next_pos not in cost_so_far or new_cost < cost_so_far[next_pos]:
-                cost_so_far[next_pos] = new_cost
-                priority = new_cost + abs(goal[0] - next_pos[0]) + abs(goal[1] - next_pos[1])
-                heapq.heappush(pq, (priority, next_pos))
+            if next_pos not in cost_so_far:
+                expected_cost = new_cost + abs(goal[0] - next_pos[1]) + abs(goal[1] - next_pos[0])
+                heapq.heappush(pq, (expected_cost, new_cost, next_pos))
                 parent[next_pos] = current
 
     execution_time = time.time() - start_time
