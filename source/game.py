@@ -27,7 +27,7 @@ class Game:
         wall.wall_images = wall.initialize_walls()
         self.food = pygame.sprite.Group()  # Initialize food group
         # Load map and get Pac-Man & Ghosts' positions
-        self.map_state, pacman_pos, ghost_positions = self.load_map(map_file)
+        self.map_data, pacman_pos, ghost_positions = self.load_map(map_file)
 
         # Create Pac-Man and Ghosts with correct positions
         self.pacman = pygame.sprite.GroupSingle(self.create_pacman())
@@ -35,9 +35,9 @@ class Game:
         
 
         # Assign correct map weights using detected positions
-        self.map_state = self.assign_weights(self.map_state, pacman_pos, ghost_positions)
+        self.map_state = self.assign_weights(self.map_data, pacman_pos, ghost_positions)
 
-        print(f"Map loaded:\n{self.map_state}")
+        # print(f"Map loaded:\n{self.map_state}")
 
     def load_map(self, file_path):
         """Load the game map from a CSV file and extract Pac-Man & Ghost positions."""
@@ -85,9 +85,8 @@ class Game:
                 # ✅ Ensure correct placement of Pac-Man & Ghosts
                 if (i, j) == pacman_pos:
                     weight_map[i][j] = 0  # Pac-Man's target position
-                elif (i, j) in ghost_positions:
-                    weight_map[i][j] = 0  # Ghost starting positions
-
+                # elif (i, j) in ghost_positions:
+                #     weight_map[i][j] = 0  # Ghost starting positions
                 elif cell in wall.wall_types:  # Walls
                     weight_map[i][j] = float('inf')
                 elif cell == 0:  # Walkable paths
