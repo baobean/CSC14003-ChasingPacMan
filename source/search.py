@@ -159,13 +159,21 @@ def ucs_algorithm(map_state, positions):
             memory_usage = tracemalloc.get_traced_memory()[1]  # Peak memory usage
             tracemalloc.stop()
 
-            return path[::-1][0] if path else start, expanded_nodes, memory_usage
+            if path:
+                next_move = path[::-1][0] 
+
+            if next_move in other_ghosts and next_move != goal:
+                    next_move = start # The ghost will stop and wait
+            else: # Ghost is at already at pacman's position
+                next_move = start 
+
+            return next_move, expanded_nodes, memory_usage 
 
         for dx, dy in [(-1, 0), (0, -1), (1, 0), (0, 1)]:  # Left → Up → Right → Down
             next_pos = (current[0] + dx, current[1] + dy)
             new_cost = cost_so_far[current] + map_state[next_pos[1]][next_pos[0]]
 
-            if next_pos in other_ghosts and map_state[next_pos[1]][next_pos[0]] == float('inf'): 
+            if map_state[next_pos[1]][next_pos[0]] == float('inf'): 
                 continue
 
             if next_pos not in cost_so_far or new_cost < cost_so_far[next_pos]:
