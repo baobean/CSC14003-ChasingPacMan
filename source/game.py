@@ -72,6 +72,47 @@ class Game:
                     self.food.add(Food("pellet", ((x + utils.x_offset) * self.tile_size, (y + utils.y_offset) * self.tile_size), self.tile_size))
 
         return np.array(map_data), pacman_pos, ghost_positions
+    def generate_map_level(self, level):
+        
+        result_maps = [np.copy(self.map_state) for _ in range(5)] 
+        test_cases = [    
+            {"pacman": (8,1), "ghost": (5,5)},
+            {"pacman": (2,8), "ghost": (7,7)},
+            {"pacman": (3,3), "ghost": (1,1)},
+            {"pacman": (8,8), "ghost": (2,2)},
+            {"pacman": (5,1), "ghost": (7,5)}
+        ]
+        test_cases_2 = [
+            {"pacman": (8,1), "blue_ghost": (5,5), "pink_ghost": (5,5), "orange_ghost": (5,5), "red_ghost": (5,5)},
+            {"pacman": (2,8), "blue_ghost": (7,7), "pink_ghost": (5,5), "orange_ghost": (5,5), "red_ghost": (5,5)},
+            {"pacman": (3,3), "blue_ghost": (1,1), "pink_ghost": (5,5), "orange_ghost": (5,5), "red_ghost": (5,5)},
+            {"pacman": (8,8), "blue_ghost": (2,2), "pink_ghost": (5,5), "orange_ghost": (5,5), "red_ghost": (5,5)},
+            {"pacman": (5,1), "blue_ghost": (7,5), "pink_ghost": (5,5), "orange_ghost": (5,5), "blue_ghost": (5,5)}
+        ]
+
+        if level <= 4:
+            for i, positions in enumerate(test_cases, start=0):
+                    pacman_pos = positions["pacman"]
+                    ghost_pos = positions["ghost"]
+                    result_maps[i][ghost_pos[1]][ghost_pos[0]] = level + 1
+                    result_maps[i][pacman_pos[1]][pacman_pos[0]] = 6
+        else:
+            for i, positions in enumerate(test_cases_2, start=0):
+                    pacman_pos = positions["pacman"]
+                    blue_pos = positions["blue_ghost"]
+                    pink_pos = positions["pink_ghost"]
+                    orange_pos = positions["orange_ghost"]
+                    red_pos = positions["red_ghost"]
+                    
+                    result_maps[i][blue_pos[1]][blue_pos[0]] = 2
+                    result_maps[i][pink_pos[1]][pink_pos[0]] = 3
+                    result_maps[i][orange_pos[1]][orange_pos[0]] = 4
+                    result_maps[i][red_pos[1]][red_pos[0]] = 5
+                    result_maps[i][pacman_pos[1]][pacman_pos[0]] = 6
+
+        
+
+        return np.array(result_maps)
 
     def assign_weights(self, map_data, pacman_pos, ghost_positions):
         """Assign pathfinding weights to the map."""
