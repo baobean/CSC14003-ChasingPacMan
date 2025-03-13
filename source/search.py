@@ -86,7 +86,6 @@ def ids_algorithm(map_state, positions):
 
     expanded_nodes = 0  # Count expanded nodes
     tracemalloc.start()  # Start memory tracking
-    start_time = time.time()  # Track execution time
 
     depth = 0
     while True:
@@ -103,7 +102,6 @@ def ids_algorithm(map_state, positions):
                 path.append(current_pos)
                 current_pos = parent[current_pos]
 
-            execution_time = time.time() - start_time  # Compute elapsed time
             memory_usage = tracemalloc.get_traced_memory()[1]  # Peak memory usage
             tracemalloc.stop()
             if path:
@@ -120,7 +118,6 @@ def ids_algorithm(map_state, positions):
         if depth > len(map_state) * len(map_state[0]):
             break
 
-    execution_time = time.time() - start_time  # Compute elapsed time
     memory_usage = tracemalloc.get_traced_memory()[1]  # Peak memory usage
     tracemalloc.stop()
     return (-1, -1), expanded_nodes, memory_usage
@@ -139,7 +136,6 @@ def ucs_algorithm(map_state, positions):
 
     expanded_nodes = 0  # Count expanded nodes
     tracemalloc.start()  # Start memory tracking
-    start_time = time.time()  # Track execution time
 
     while pq:
         cost, current = heapq.heappop(pq)
@@ -155,7 +151,6 @@ def ucs_algorithm(map_state, positions):
                 path.append(current)
                 current = parent[current]
 
-            execution_time = time.time() - start_time  # Compute elapsed time
             memory_usage = tracemalloc.get_traced_memory()[1]  # Peak memory usage
             tracemalloc.stop()
 
@@ -181,7 +176,6 @@ def ucs_algorithm(map_state, positions):
                 parent[next_pos] = current
                 cost_so_far[next_pos] = new_cost
 
-    execution_time = time.time() - start_time  # Compute elapsed time
     memory_usage = tracemalloc.get_traced_memory()[1]
     tracemalloc.stop()
 

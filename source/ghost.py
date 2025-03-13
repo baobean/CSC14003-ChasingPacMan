@@ -79,5 +79,4 @@ class Ghost(pygame.sprite.Sprite):
             # if pygame.sprite.spritecollide(self, walls, False):  # Now using `self` instead of `test_rect`
             #     print("Collision detected! (Ghost)")
     
-
         self.animation_state()  

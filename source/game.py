@@ -27,17 +27,16 @@ class Game:
         wall.wall_images = wall.initialize_walls()
         self.food = pygame.sprite.Group()  # Initialize food group
         # Load map and get Pac-Man & Ghosts' positions
-        self.map_state, pacman_pos, ghost_positions = self.load_map(map_file)
+        self.map_data, pacman_pos, ghost_positions = self.load_map(map_file)
 
         # Create Pac-Man and Ghosts with correct positions
-        self.pacman = pygame.sprite.GroupSingle(self.create_pacman())
-        self.ghosts = pygame.sprite.Group(*self.create_ghosts()) 
-        
+        # self.pacman = pygame.sprite.GroupSingle(self.create_pacman())
+        # self.ghosts = pygame.sprite.Group(*self.create_ghosts()) 
 
         # Assign correct map weights using detected positions
-        self.map_state = self.assign_weights(self.map_state, pacman_pos, ghost_positions)
+        self.original_map_state = self.assign_weights(self.map_data, pacman_pos, ghost_positions)
 
-        print(f"Map loaded:\n{self.map_state}")
+        # print(f"Map loaded:\n{self.map_state}")
 
     def load_map(self, file_path):
         """Load the game map from a CSV file and extract Pac-Man & Ghost positions."""
@@ -53,7 +52,6 @@ class Game:
 
         self.walls = pygame.sprite.Group()  # Initialize walls group
 
-
         for y, row in enumerate(map_data):
             for x, tile in enumerate(row):
                 if tile == 1:  # Wall
@@ -62,9 +60,9 @@ class Game:
                 elif tile in wall.wall_types: # walls
                     new_wall = wall.Wall(wall.wall_types[tile], ((x + utils.x_offset) * self.tile_size, (y + utils.y_offset) * self.tile_size), (self.tile_size, self.tile_size))
                     self.walls.add(new_wall)
-                elif tile == 6:  # Pac-Man
-                    pacman_pos = (x + utils.x_offset, y + utils.y_offset)  # Store grid position
-                    print(f"Pac-Man found at: {pacman_pos}")
+                # elif tile == 6:  # Pac-Man
+                #     pacman_pos = (x + utils.x_offset, y + utils.y_offset)  # Store grid position
+                #     print(f"Pac-Man found at: {pacman_pos}")
                 elif tile in {2, 3, 4, 5}:  # Ghosts (different colors)
                     ghost_positions.append((x + utils.x_offset, y + utils.y_offset))
                     self.food.add(Food("pellet", ((x + utils.x_offset) * self.tile_size, (y + utils.y_offset) * self.tile_size), self.tile_size))
@@ -72,6 +70,45 @@ class Game:
                     self.food.add(Food("pellet", ((x + utils.x_offset) * self.tile_size, (y + utils.y_offset) * self.tile_size), self.tile_size))
 
         return np.array(map_data), pacman_pos, ghost_positions
+    
+    def generate_map_level(self, level):
+        result_maps = [np.copy(self.original_map_state) for _ in range(5)] 
+        test_cases = [    
+            {"pacman": (1,1), "ghost": (7, 1)},
+            {"pacman": (1,1), "ghost": (9, 1)},
+            {"pacman": (1,1), "ghost": (26,29)},
+            {"pacman": (1,1), "ghost": (3,27)},
+            {"pacman": (1,1), "ghost": (7,1)}
+        ]
+        test_cases_2 = [
+            {"pacman": (1,1), "blue_ghost": (26,29), "pink_ghost": (3,27), "orange_ghost": (5,5), "red_ghost": (5,5)},
+            {"pacman": (1,1), "blue_ghost": (3,27), "pink_ghost": (26,29), "orange_ghost": (5,5), "red_ghost": (5,5)},
+            {"pacman": (1,1), "blue_ghost": (1,1), "pink_ghost": (3,27), "orange_ghost": (26,29), "red_ghost": (5,5)},
+            {"pacman": (1,1), "blue_ghost": (2,2), "pink_ghost": (5,5), "orange_ghost": (3,27), "red_ghost": (5,5)},
+            {"pacman": (1,1), "blue_ghost": (7,5), "pink_ghost": (5,5), "orange_ghost": (5,5), "red_ghost": (26,29)}
+        ]
+
+        if level <= 4:
+            for i, positions in enumerate(test_cases, start=0):
+                    pacman_pos = positions["pacman"]
+                    ghost_pos = positions["ghost"]
+                    result_maps[i][ghost_pos[1]][ghost_pos[0]] = level + 1
+                    result_maps[i][pacman_pos[1]][pacman_pos[0]] = 6
+        else:
+            for i, positions in enumerate(test_cases_2, start=0):
+                    pacman_pos = positions["pacman"]
+                    blue_pos = positions["blue_ghost"]
+                    pink_pos = positions["pink_ghost"]
+                    orange_pos = positions["orange_ghost"]
+                    red_pos = positions["red_ghost"]
+                    
+                    result_maps[i][blue_pos[1]][blue_pos[0]] = 2
+                    result_maps[i][pink_pos[1]][pink_pos[0]] = 3
+                    result_maps[i][orange_pos[1]][orange_pos[0]] = 4
+                    result_maps[i][red_pos[1]][red_pos[0]] = 5
+                    result_maps[i][pacman_pos[1]][pacman_pos[0]] = 6
+
+        return np.array(result_maps)
 
     def assign_weights(self, map_data, pacman_pos, ghost_positions):
         """Assign pathfinding weights to the map."""
@@ -85,9 +122,8 @@ class Game:
                 # ✅ Ensure correct placement of Pac-Man & Ghosts
                 if (i, j) == pacman_pos:
                     weight_map[i][j] = 0  # Pac-Man's target position
-                elif (i, j) in ghost_positions:
-                    weight_map[i][j] = 0  # Ghost starting positions
-
+                # elif (i, j) in ghost_positions:
+                #     weight_map[i][j] = 0  # Ghost starting positions
                 elif cell in wall.wall_types:  # Walls
                     weight_map[i][j] = float('inf')
                 elif cell == 0:  # Walkable paths
@@ -156,6 +192,10 @@ class Game:
             self.current_scene = "ending"
             current_screen = self.capture_screen()
             self.pacman.sprite.score = 0
+            self.map_state_list = self.map_state_list[1:]
+            self.pacman = None
+            self.ghosts = None
+
             self.ending_scene(current_screen)
 
     
@@ -198,7 +238,7 @@ class Game:
                 pygame.quit()
                 sys.exit()
 
-        self.pacman.update(self.walls, self.ghosts)
+        # self.pacman.update(self.walls, self.ghosts)
         self.check_collisions()            
 
         pygame.display.flip()
@@ -209,7 +249,7 @@ class Game:
         return screen_copy
     
     def ending_scene(self, current_screen):
-        countdown = 3
+        countdown = 1
 
         while countdown > 0:
             self.screen.fill((0, 0, 0))
@@ -219,7 +259,13 @@ class Game:
             pygame.time.delay(1000)
             countdown -= 1
 
-        self.current_scene = "intro"
+        if len(self.map_state_list) == 0:
+            self.current_scene = "intro"
+        else:
+            self.map_state = self.map_state_list[0]
+            self.pacman = pygame.sprite.GroupSingle(self.create_pacman())
+            self.ghosts = pygame.sprite.Group(*self.create_ghosts())
+            self.current_scene = "game"
 
     def intro_scene(self):
         """Intro screen with level selection"""
@@ -243,7 +289,11 @@ class Game:
                 elif event.key == pygame.K_UP:
                     self.level = self.level - 1 if self.level > 1 else 6
                 elif event.key == pygame.K_RETURN:
-                    self.current_scene = "game"      
+                    self.map_state_list = self.generate_map_level(self.level)
+                    self.map_state = self.map_state_list[0]
+                    self.current_scene = "game" 
+                    self.pacman = pygame.sprite.GroupSingle(self.create_pacman())
+                    self.ghosts = pygame.sprite.Group(*self.create_ghosts())
                     return     
 
     def run(self):
