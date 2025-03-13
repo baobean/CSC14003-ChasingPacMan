@@ -1,7 +1,7 @@
 import csv
 import numpy as np
 import timeit
-from search import ucs_algorithm, bfs_algorithm
+from search import bfs_algorithm, ids_algorithm, ucs_algorithm, astar_algorithm
 
 def load_test_map(file_path):
     """Load test map from CSV"""
@@ -73,16 +73,59 @@ test_cases = [
     {"pacman": (5,1), "ghost": (7,5)}
 ]
 
+print("\n====== BFS Algorithm - Multiple Test Cases ======\n")
+# Run BFS on each test case
+for i, positions in enumerate(test_cases, start=1):
+    pacman_pos = positions["pacman"]
+    ghost_pos = positions["ghost"]
+    test_map = load_test_map("source/map.csv")
+    test_map = assign_weights(test_map, pacman_pos, ghost_pos)
+    positions["ghosts"] = [(-1,-1)]  # Other ghosts are ignored
+
+    print(f"Test Case {i}:")
+    print(f"  Blue Ghost Starting Position: {positions['ghost']}")
+    print(f"  Pac-Man Position: {positions['pacman']}")
+
+    test_number = 5000
+    execution_time = timeit.timeit(lambda: bfs_algorithm(test_map, positions), number = test_number) / test_number
+    next_move, expanded_nodes, memory_usage = bfs_algorithm(test_map, positions)
+
+    print(f"\n  Final Results for Test Case {i}:")
+    print(f"  ➤ Search Time: {execution_time:.6f} seconds")
+    print(f"  ➤ Total Memory Usage: {memory_usage / 1024:.2f} KB")
+    print(f"  ➤ Number of Expanded Nodes: {expanded_nodes}")
+    print("-" * 50)
+
+print("\n====== IDS Algorithm - Multiple Test Cases ======\n")
+# Run IDS on each test case
+for i, positions in enumerate(test_cases, start=1):
+    pacman_pos = positions["pacman"]
+    ghost_pos = positions["ghost"]
+    test_map = load_test_map("source/map.csv")
+    test_map = assign_weights(test_map, pacman_pos, ghost_pos)
+    positions["ghosts"] = [(-1,-1)]  # Other ghosts are ignored
+
+    print(f"Test Case {i}:")
+    print(f"  Pink Ghost Starting Position: {positions['ghost']}")
+    print(f"  Pac-Man Position: {positions['pacman']}")
+
+    test_number = 5000
+    execution_time = timeit.timeit(lambda: ids_algorithm(test_map, positions), number = test_number) / test_number
+    next_move, expanded_nodes, memory_usage = ids_algorithm(test_map, positions)
+
+    print(f"\n  Final Results for Test Case {i}:")
+    print(f"  ➤ Search Time: {execution_time:.6f} seconds")
+    print(f"  ➤ Total Memory Usage: {memory_usage / 1024:.2f} KB")
+    print(f"  ➤ Number of Expanded Nodes: {expanded_nodes}")
+    print("-" * 50)
+
 print("\n====== UCS Algorithm - Multiple Test Cases ======\n")
-
-
 # Run UCS on each test case
 for i, positions in enumerate(test_cases, start=1):
     pacman_pos = positions["pacman"]
     ghost_pos = positions["ghost"]
     test_map = load_test_map("source/map.csv")
     test_map = assign_weights(test_map, pacman_pos, ghost_pos)
-    print(test_map)
     positions["ghosts"] = [(-1,-1)]  # Other ghosts are ignored
 
     print(f"Test Case {i}:")
@@ -90,8 +133,31 @@ for i, positions in enumerate(test_cases, start=1):
     print(f"  Pac-Man Position: {positions['pacman']}")
 
     test_number = 5000
-    execution_time = timeit.timeit(lambda: bfs_algorithm(test_map, positions), number = test_number) / test_number
-    next_move, expanded_nodes, memory_usage = bfs_algorithm(test_map, positions)
+    execution_time = timeit.timeit(lambda: ucs_algorithm(test_map, positions), number = test_number) / test_number
+    next_move, expanded_nodes, memory_usage = ucs_algorithm(test_map, positions)
+
+    print(f"\n  Final Results for Test Case {i}:")
+    print(f"  ➤ Search Time: {execution_time:.6f} seconds")
+    print(f"  ➤ Total Memory Usage: {memory_usage / 1024:.2f} KB")
+    print(f"  ➤ Number of Expanded Nodes: {expanded_nodes}")
+    print("-" * 50)
+
+print("\n====== A-Star Algorithm - Multiple Test Cases ======\n")
+# Run A-Star on each test case
+for i, positions in enumerate(test_cases, start=1):
+    pacman_pos = positions["pacman"]
+    ghost_pos = positions["ghost"]
+    test_map = load_test_map("source/map.csv")
+    test_map = assign_weights(test_map, pacman_pos, ghost_pos)
+    positions["ghosts"] = [(-1,-1)]  # Other ghosts are ignored
+
+    print(f"Test Case {i}:")
+    print(f"  Red Ghost Starting Position: {positions['ghost']}")
+    print(f"  Pac-Man Position: {positions['pacman']}")
+
+    test_number = 5000
+    execution_time = timeit.timeit(lambda: astar_algorithm(test_map, positions), number = test_number) / test_number
+    next_move, expanded_nodes, memory_usage = astar_algorithm(test_map, positions)
 
     print(f"\n  Final Results for Test Case {i}:")
     print(f"  ➤ Search Time: {execution_time:.6f} seconds")
