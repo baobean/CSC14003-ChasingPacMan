@@ -30,12 +30,11 @@ class Game:
         self.map_data, pacman_pos, ghost_positions = self.load_map(map_file)
 
         # Create Pac-Man and Ghosts with correct positions
-        self.pacman = pygame.sprite.GroupSingle(self.create_pacman())
-        self.ghosts = pygame.sprite.Group(*self.create_ghosts()) 
-        
+        # self.pacman = pygame.sprite.GroupSingle(self.create_pacman())
+        # self.ghosts = pygame.sprite.Group(*self.create_ghosts()) 
 
         # Assign correct map weights using detected positions
-        self.map_state = self.assign_weights(self.map_data, pacman_pos, ghost_positions)
+        self.original_map_state = self.assign_weights(self.map_data, pacman_pos, ghost_positions)
 
         # print(f"Map loaded:\n{self.map_state}")
 
@@ -53,7 +52,6 @@ class Game:
 
         self.walls = pygame.sprite.Group()  # Initialize walls group
 
-
         for y, row in enumerate(map_data):
             for x, tile in enumerate(row):
                 if tile == 1:  # Wall
@@ -62,9 +60,9 @@ class Game:
                 elif tile in wall.wall_types: # walls
                     new_wall = wall.Wall(wall.wall_types[tile], ((x + utils.x_offset) * self.tile_size, (y + utils.y_offset) * self.tile_size), (self.tile_size, self.tile_size))
                     self.walls.add(new_wall)
-                elif tile == 6:  # Pac-Man
-                    pacman_pos = (x + utils.x_offset, y + utils.y_offset)  # Store grid position
-                    print(f"Pac-Man found at: {pacman_pos}")
+                # elif tile == 6:  # Pac-Man
+                #     pacman_pos = (x + utils.x_offset, y + utils.y_offset)  # Store grid position
+                #     print(f"Pac-Man found at: {pacman_pos}")
                 elif tile in {2, 3, 4, 5}:  # Ghosts (different colors)
                     ghost_positions.append((x + utils.x_offset, y + utils.y_offset))
                     self.food.add(Food("pellet", ((x + utils.x_offset) * self.tile_size, (y + utils.y_offset) * self.tile_size), self.tile_size))
@@ -72,22 +70,22 @@ class Game:
                     self.food.add(Food("pellet", ((x + utils.x_offset) * self.tile_size, (y + utils.y_offset) * self.tile_size), self.tile_size))
 
         return np.array(map_data), pacman_pos, ghost_positions
+    
     def generate_map_level(self, level):
-        
-        result_maps = [np.copy(self.map_state) for _ in range(5)] 
+        result_maps = [np.copy(self.original_map_state) for _ in range(5)] 
         test_cases = [    
-            {"pacman": (8,1), "ghost": (5,5)},
-            {"pacman": (2,8), "ghost": (7,7)},
-            {"pacman": (3,3), "ghost": (1,1)},
-            {"pacman": (8,8), "ghost": (2,2)},
-            {"pacman": (5,1), "ghost": (7,5)}
+            {"pacman": (1,1), "ghost": (7, 1)},
+            {"pacman": (1,1), "ghost": (9, 1)},
+            {"pacman": (1,1), "ghost": (26,29)},
+            {"pacman": (1,1), "ghost": (3,27)},
+            {"pacman": (1,1), "ghost": (7,1)}
         ]
         test_cases_2 = [
-            {"pacman": (8,1), "blue_ghost": (5,5), "pink_ghost": (5,5), "orange_ghost": (5,5), "red_ghost": (5,5)},
-            {"pacman": (2,8), "blue_ghost": (7,7), "pink_ghost": (5,5), "orange_ghost": (5,5), "red_ghost": (5,5)},
-            {"pacman": (3,3), "blue_ghost": (1,1), "pink_ghost": (5,5), "orange_ghost": (5,5), "red_ghost": (5,5)},
-            {"pacman": (8,8), "blue_ghost": (2,2), "pink_ghost": (5,5), "orange_ghost": (5,5), "red_ghost": (5,5)},
-            {"pacman": (5,1), "blue_ghost": (7,5), "pink_ghost": (5,5), "orange_ghost": (5,5), "blue_ghost": (5,5)}
+            {"pacman": (1,1), "blue_ghost": (26,29), "pink_ghost": (3,27), "orange_ghost": (5,5), "red_ghost": (5,5)},
+            {"pacman": (1,1), "blue_ghost": (3,27), "pink_ghost": (26,29), "orange_ghost": (5,5), "red_ghost": (5,5)},
+            {"pacman": (1,1), "blue_ghost": (1,1), "pink_ghost": (3,27), "orange_ghost": (26,29), "red_ghost": (5,5)},
+            {"pacman": (1,1), "blue_ghost": (2,2), "pink_ghost": (5,5), "orange_ghost": (3,27), "red_ghost": (5,5)},
+            {"pacman": (1,1), "blue_ghost": (7,5), "pink_ghost": (5,5), "orange_ghost": (5,5), "red_ghost": (26,29)}
         ]
 
         if level <= 4:
@@ -109,8 +107,6 @@ class Game:
                     result_maps[i][orange_pos[1]][orange_pos[0]] = 4
                     result_maps[i][red_pos[1]][red_pos[0]] = 5
                     result_maps[i][pacman_pos[1]][pacman_pos[0]] = 6
-
-        
 
         return np.array(result_maps)
 
@@ -196,6 +192,10 @@ class Game:
             self.current_scene = "ending"
             current_screen = self.capture_screen()
             self.pacman.sprite.score = 0
+            self.map_state_list = self.map_state_list[1:]
+            self.pacman = None
+            self.ghosts = None
+
             self.ending_scene(current_screen)
 
     
@@ -238,7 +238,7 @@ class Game:
                 pygame.quit()
                 sys.exit()
 
-        self.pacman.update(self.walls, self.ghosts)
+        # self.pacman.update(self.walls, self.ghosts)
         self.check_collisions()            
 
         pygame.display.flip()
@@ -249,7 +249,7 @@ class Game:
         return screen_copy
     
     def ending_scene(self, current_screen):
-        countdown = 3
+        countdown = 1
 
         while countdown > 0:
             self.screen.fill((0, 0, 0))
@@ -259,7 +259,13 @@ class Game:
             pygame.time.delay(1000)
             countdown -= 1
 
-        self.current_scene = "intro"
+        if len(self.map_state_list) == 0:
+            self.current_scene = "intro"
+        else:
+            self.map_state = self.map_state_list[0]
+            self.pacman = pygame.sprite.GroupSingle(self.create_pacman())
+            self.ghosts = pygame.sprite.Group(*self.create_ghosts())
+            self.current_scene = "game"
 
     def intro_scene(self):
         """Intro screen with level selection"""
@@ -283,7 +289,11 @@ class Game:
                 elif event.key == pygame.K_UP:
                     self.level = self.level - 1 if self.level > 1 else 6
                 elif event.key == pygame.K_RETURN:
-                    self.current_scene = "game"      
+                    self.map_state_list = self.generate_map_level(self.level)
+                    self.map_state = self.map_state_list[0]
+                    self.current_scene = "game" 
+                    self.pacman = pygame.sprite.GroupSingle(self.create_pacman())
+                    self.ghosts = pygame.sprite.Group(*self.create_ghosts())
                     return     
 
     def run(self):
