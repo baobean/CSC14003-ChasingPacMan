@@ -1,82 +1,236 @@
-import pygame
-#from search import bfs_algorithm, ids_algorithm, ucs_algorithm, astar_algorithm
-import search
-import utils
+from collections import deque
+import heapq
+import tracemalloc
+import time
 
-class Ghost(pygame.sprite.Sprite):
-    def __init__(self, ghost_type, position):
-        super().__init__()
-        self.ghost_type = ghost_type
-        self.frames = self.load_frames(ghost_type)  # Load animation frames for all directions
-        self.algorithm = self.assign_algorithm(ghost_type)  # Assign pathfinding algorithm
+def bfs_algorithm(map_state, positions):
+    """Return the next appropriate move using BFS algorithm"""
 
-        # Initial State
-        self.animation_index = 0
-        self.direction = "right"  # Default direction
-        self.image = self.frames["right"][0]  # Set initial frame
-        self.rect = self.image.get_rect(topleft=position)
-        self.speed = 4  # Adjust speed if needed
-        
+    start = positions["ghost"]
+    goal = positions["pacman"]
+    other_ghosts = set(positions["ghosts"])
 
-    def load_frames(self, ghost_type):
-        """Load ghost animation frames for all directions"""
-        directions = ["right", "left", "up", "down"]
-        frames = {dir: [] for dir in directions}  # Dictionary to store frames by direction
+    queue = deque([start])
+    visited = set([start])
+    parent = {}
 
-        for i, direction in enumerate(directions, start=1):  
-            for j in range(1, 3):  # Two images per direction
-                image_path = f'assets/ghost/{ghost_type.lower()}_{i}.{j}.png'
-                frame = pygame.image.load(image_path).convert_alpha()
-                # frame = pygame.transform.scale2x(frame)
-                frames[direction].append(frame)
+    # Set things up for tracking
+    expanded_nodes = 0  
+    tracemalloc.start()  
 
-        return frames  # Return dictionary of animations
+    while queue:
+        current = queue.popleft()
+        expanded_nodes += 1
 
-    def assign_algorithm(self, ghost_type):
-        """Assign the correct search algorithm to the ghost"""
-        if ghost_type == "Blue":
-            return search.bfs_algorithm  # Breadth-First Search
-        elif ghost_type == "Pink":
-            return search.ids_algorithm  # Depth-First Search 
-        elif ghost_type == "Orange":
-            return search.ucs_algorithm  # Uniform-Cost Search
-        elif ghost_type == "Red":
-            return search.astar_algorithm  # A* Search
-        return None  # Default if no algorithm is assigned
+        if current == goal:
+            path = []
+            while current != start:
+                path.append(current)
+                current = parent[current]
 
-    def determine_direction(self, next_pos):
-        """Determines ghost movement direction based on next position."""
-        current_x, current_y = self.rect.x // utils.tile_size - utils.x_offset, self.rect.y // utils.tile_size - utils.y_offset # Get grid-based position
+            memory_usage = tracemalloc.get_traced_memory()[1]
+            tracemalloc.stop()
 
-        if isinstance(next_pos, tuple) and len(next_pos) == 2:  # Ensure next_pos is valid
-            dx, dy = next_pos[0] - current_x, next_pos[1] - current_y
+            if path:
+                next_move = path[::-1][0] 
 
-            if dx > 0:
-                return "right"
-            elif dx < 0:
-                return "left"
-            elif dy > 0:
-                return "down"
-            elif dy < 0:
-                return "up"
+                if next_move in other_ghosts and next_move != goal:
+                    next_move = start # The ghost will stop and wait
+            else: # Ghost is at already at pacman's position
+                next_move = start 
 
-        return self.direction  # Default to the current direction
+            return next_move, expanded_nodes, memory_usage
+
+        for dx, dy in [(-1, 0), (0, -1), (1, 0), (0, 1)]:
+            next_pos = (current[0] + dx, current[1] + dy)
+
+            if map_state[next_pos[1]][next_pos[0]] == float('inf'): 
+                continue
+
+            if next_pos not in visited:
+                queue.append(next_pos)
+                visited.add(next_pos)
+                parent[next_pos] = current
+
+    # BFS failed to find a path
+    memory_usage = tracemalloc.get_traced_memory()[1]
+    tracemalloc.stop()  # Stop memory tracking
+    return (-1, -1), expanded_nodes, memory_usage  # No path found
 
 
-    def animation_state(self):
-        """Cycle through frames based on direction"""
-        self.animation_index = (self.animation_index + 0.1) % len(self.frames[self.direction])
-        self.image = self.frames[self.direction][int(self.animation_index)]
+def dls(curr_pos, goal, depth, map_state, other_ghosts, visited, parent):
+    # Depth-Limited Search (DLS) function
+    if depth >= 0:
+        if curr_pos == goal:
+            # If the current position is the goal, return the current position
+            return curr_pos
+        visited.add(curr_pos)
+        # Explore the four possible directions (up, left, down, right)
+        for dx, dy in [(-1, 0), (0, -1), (1, 0), (0, 1)]:
+            next_pos = (curr_pos[0] + dx, curr_pos[1] + dy)
+            # Check if the next position is valid and not visited
+            if next_pos not in visited and map_state[next_pos[1]][next_pos[0]] != float('inf'):
+                parent[next_pos] = curr_pos
+                # Recursive call to DLS with decremented depth
+                found = dls(next_pos, goal, depth - 1, map_state, other_ghosts, visited, parent)
+                if found:
+                    return found
+        visited.remove(curr_pos)
+    return None
 
-    def update(self, walls, map_state, positions):
-        if self.algorithm:
-            next_pos, tmp_node, memory_usage = self.algorithm(map_state, positions)
-            
-            if isinstance(next_pos, tuple) and len(next_pos) == 2:  # Ensure next_pos is a valid (x, y) tuple
-                self.direction = self.determine_direction(next_pos)
-                self.rect.x, self.rect.y = (next_pos[0] + utils.x_offset) * utils.tile_size, (next_pos[1] + utils.y_offset) * utils.tile_size
+def ids_algorithm(map_state, positions):
+    # Iterative Deepening Search (IDS) algorithm
+    start = positions["ghost"]
+    goal = positions["pacman"]
+    other_ghosts = set(positions["ghosts"])
 
-            # if pygame.sprite.spritecollide(self, walls, False):  # Now using `self` instead of `test_rect`
-            #     print("Collision detected! (Ghost)")
+    expanded_nodes = 0  # Count expanded nodes
+    tracemalloc.start()  # Start memory tracking
+
+    depth = 0
+    while True:
+        visited = set()
+        parent = {}
+        # Perform Depth-Limited Search (DLS) up to the current depth
+        result = dls(start, goal, depth, map_state, other_ghosts, visited, parent)
+        expanded_nodes += len(visited)
+        if result:
+            # If goal is found, reconstruct the path
+            path = []
+            current_pos = result
+            while current_pos != start:
+                path.append(current_pos)
+                current_pos = parent[current_pos]
+
+            memory_usage = tracemalloc.get_traced_memory()[1]  # Peak memory usage
+            tracemalloc.stop()
+            if path:
+                next_move = path[::-1][0] 
+
+                if next_move in other_ghosts and next_move != goal:
+                    next_move = start # The ghost will stop and wait
+            else: # Ghost is at already at pacman's position
+                next_move = start 
+
+            return next_move, expanded_nodes, memory_usage
+        depth += 1
+
+        # If depth exceeds a reasonable limit, break to prevent infinite loop
+        if depth > len(map_state) * len(map_state[0]):
+            break
+
+    memory_usage = tracemalloc.get_traced_memory()[1]  # Peak memory usage
+    tracemalloc.stop()
+    return (-1, -1), expanded_nodes, memory_usage
+
+def ucs_algorithm(map_state, positions):
+    """Uniform-Cost Search for a specific ghost, avoiding other ghosts"""
+
+    start = positions["ghost"]  # The ghost that is currently moving
+    goal = positions["pacman"]  # Pac-Man's position
+    other_ghosts = set(positions["ghosts"])  # Other ghosts' positions
+
+    pq = [(0, start)]  # Priority queue (cost, position)
+    visited = set()  # Use set for fast lookup
+    parent = {start: None}
+    cost_so_far = {start: 0}
+
+    expanded_nodes = 0  # Count expanded nodes
+    tracemalloc.start()  # Start memory tracking
+
+    while pq:
+        cost, current = heapq.heappop(pq)
+
+        if current in visited:
+            continue
+        visited.add(current)
+        expanded_nodes += 1
+
+        if current == goal:
+            path = []
+            while current != start:
+                path.append(current)
+                current = parent[current]
+
+            memory_usage = tracemalloc.get_traced_memory()[1]  # Peak memory usage
+            tracemalloc.stop()
+
+            if path:
+                next_move = path[::-1][0] 
+
+                if next_move in other_ghosts and next_move != goal:
+                    next_move = start # The ghost will stop and wait
+            else: # Ghost is at already at pacman's position
+                next_move = start 
+
+            return next_move, expanded_nodes, memory_usage
+
+        for dx, dy in [(-1, 0), (0, -1), (1, 0), (0, 1)]:  # Left → Up → Right → Down
+            next_pos = (current[0] + dx, current[1] + dy)
+            new_cost = cost_so_far[current] + map_state[next_pos[1]][next_pos[0]]
+
+            if map_state[next_pos[1]][next_pos[0]] == float('inf'): 
+                continue
+
+            if next_pos not in cost_so_far or new_cost < cost_so_far[next_pos]:
+                heapq.heappush(pq, (new_cost, next_pos))
+                parent[next_pos] = current
+                cost_so_far[next_pos] = new_cost
+
+    memory_usage = tracemalloc.get_traced_memory()[1]
+    tracemalloc.stop()
+
+    return (-1, -1), expanded_nodes, memory_usage  # No path found
     
-        self.animation_state()  
+def astar_algorithm(map_state, positions):
+    start = positions["ghost"]
+    goal = positions["pacman"]
+    other_ghosts = set(positions["ghosts"])
+
+    pq = [(0, start)]
+    parent = {}
+    cost_so_far = {start: 0}
+
+    expanded_nodes = 0
+    tracemalloc.start()
+
+    while pq:
+        cost, current = heapq.heappop(pq)
+        expanded_nodes += 1
+
+        if current == goal:
+            path = []
+            while current != start:
+                path.append(current)
+                current = parent[current]
+
+            memory_usage = tracemalloc.get_traced_memory()[1]
+            tracemalloc.stop()
+
+            if path:
+                next_move = path[::-1][0] 
+
+                if next_move in other_ghosts and next_move != goal:
+                    next_move = start # The ghost will stop and wait
+            else: # Ghost is at already at pacman's position
+                next_move = start 
+
+            return next_move, expanded_nodes, memory_usage
+        
+        for dx, dy in [(-1, 0), (0, -1), (1, 0), (0, 1)]:
+            next_pos = (current[0] + dx, current[1] + dy)
+            new_cost = cost_so_far[current] + 1
+
+            if map_state[next_pos[1]][next_pos[0]] == float('inf'): 
+                continue
+
+            if next_pos not in cost_so_far or new_cost < cost_so_far[next_pos]:
+                cost_so_far[next_pos] = new_cost
+                priority = new_cost + abs(goal[0] - next_pos[0]) + abs(goal[1] - next_pos[1])
+                heapq.heappush(pq, (priority, next_pos))
+                parent[next_pos] = current
+
+    memory_usage = tracemalloc.get_traced_memory()[1]
+    tracemalloc.stop()
+
+    return (-1, -1), expanded_nodes, memory_usage
