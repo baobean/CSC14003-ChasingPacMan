@@ -105,12 +105,13 @@ def ids_algorithm(map_state, positions):
             memory_usage = tracemalloc.get_traced_memory()[1]  # Peak memory usage
             tracemalloc.stop()
             if path:
-                next_move = path[::-1][0]
-                if next_move in other_ghosts:
-                    next_move = start
-            else:
-                next_move = (-1,-1)
-                
+                next_move = path[::-1][0] 
+
+                if next_move in other_ghosts and next_move != goal:
+                    next_move = start # The ghost will stop and wait
+            else: # Ghost is at already at pacman's position
+                next_move = start 
+
             return next_move, expanded_nodes, memory_usage
         depth += 1
 
@@ -157,12 +158,12 @@ def ucs_algorithm(map_state, positions):
             if path:
                 next_move = path[::-1][0] 
 
-            if next_move in other_ghosts and next_move != goal:
+                if next_move in other_ghosts and next_move != goal:
                     next_move = start # The ghost will stop and wait
             else: # Ghost is at already at pacman's position
                 next_move = start 
 
-            return next_move, expanded_nodes, memory_usage 
+            return next_move, expanded_nodes, memory_usage
 
         for dx, dy in [(-1, 0), (0, -1), (1, 0), (0, 1)]:  # Left → Up → Right → Down
             next_pos = (current[0] + dx, current[1] + dy)

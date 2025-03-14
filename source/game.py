@@ -67,18 +67,18 @@ class Game:
     def generate_map_level(self, level):
         result_maps = [np.copy(self.original_map_state) for _ in range(5)] 
         test_cases = [    
-            {"pacman": (1,1), "ghost": (7, 1)},
-            {"pacman": (1,1), "ghost": (9, 1)},
-            {"pacman": (1,1), "ghost": (26,29)},
-            {"pacman": (1,1), "ghost": (3,27)},
-            {"pacman": (1,1), "ghost": (7,1)}
+            {"pacman": (1, 1), "ghost": (7, 1)},
+            {"pacman": (1, 1), "ghost": (9, 1)},
+            {"pacman": (1, 1), "ghost": (26, 29)},
+            {"pacman": (1, 1), "ghost": (3, 26)},
+            {"pacman": (1, 1), "ghost": (7, 1)}
         ]
         test_cases_2 = [
-            {"pacman": (1,1), "blue_ghost": (26,29), "pink_ghost": (3,27), "orange_ghost": (5,5), "red_ghost": (5,5)},
-            {"pacman": (1,1), "blue_ghost": (3,27), "pink_ghost": (26,29), "orange_ghost": (5,5), "red_ghost": (5,5)},
-            {"pacman": (1,1), "blue_ghost": (1,1), "pink_ghost": (3,27), "orange_ghost": (26,29), "red_ghost": (5,5)},
-            {"pacman": (1,1), "blue_ghost": (2,2), "pink_ghost": (5,5), "orange_ghost": (3,27), "red_ghost": (5,5)},
-            {"pacman": (1,1), "blue_ghost": (7,5), "pink_ghost": (5,5), "orange_ghost": (5,5), "red_ghost": (26,29)}
+            {"pacman": (1, 1), "blue_ghost": (26, 29), "pink_ghost": (3,26), "orange_ghost": (6,23), "red_ghost": (7,1)},
+            {"pacman": (1,1), "blue_ghost": (3,26), "pink_ghost": (26,29), "orange_ghost": (5,5), "red_ghost": (1,20)},
+            {"pacman": (1,1), "blue_ghost": (9,8), "pink_ghost": (12, 28), "orange_ghost": (26,29), "red_ghost": (5,5)},
+            {"pacman": (1,1), "blue_ghost": (1,20), "pink_ghost": (26 ,26), "orange_ghost": (3,26), "red_ghost": (12,28)},
+            {"pacman": (1,1), "blue_ghost": (12,28), "pink_ghost": (6,23), "orange_ghost": (7,1), "red_ghost": (26,29)}
         ]
 
         if level <= 4:
@@ -243,12 +243,15 @@ class Game:
         return screen_copy
     
     def ending_scene(self, current_screen):
-        countdown = 1
+        countdown = 2
 
         while countdown > 0:
             self.screen.fill((0, 0, 0))
             self.screen.blit(current_screen, (0, 0))
-            self.text_renderer.render_text(self.screen, f"GO BACK TO LOBBY IN {countdown}", 100, 100, True)
+            if len(self.map_state_list) == 0:
+                self.text_renderer.render_text(self.screen, f"GO BACK TO LOBBY IN {countdown}", 100, 100, True)
+            else:
+                self.text_renderer.render_text(self.screen, f"MOVE TO NEW TEST CASE IN {countdown}", 100, 100, True)
             pygame.display.flip()
             pygame.time.delay(1000)
             countdown -= 1
