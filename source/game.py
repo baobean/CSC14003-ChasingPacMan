@@ -13,7 +13,6 @@ class Game:
     def __init__(self, map_file="map.csv"):
         pygame.init()
         self.level = 1
-        self.ending = False
         self.current_scene = "intro"
         self.tile_size = utils.tile_size
         self.screen_width = (utils.map_width + utils.x_offset) * self.tile_size
@@ -25,18 +24,12 @@ class Game:
 
         self.text_renderer = TextRenderer()
         wall.wall_images = wall.initialize_walls()
-        self.food = pygame.sprite.Group()  # Initialize food group
+        self.original_food = pygame.sprite.Group()  # Initialize food group
         # Load map and get Pac-Man & Ghosts' positions
         self.map_data, pacman_pos, ghost_positions = self.load_map(map_file)
 
-        # Create Pac-Man and Ghosts with correct positions
-        # self.pacman = pygame.sprite.GroupSingle(self.create_pacman())
-        # self.ghosts = pygame.sprite.Group(*self.create_ghosts()) 
-
         # Assign correct map weights using detected positions
         self.original_map_state = self.assign_weights(self.map_data, pacman_pos, ghost_positions)
-
-        # print(f"Map loaded:\n{self.map_state}")
 
     def load_map(self, file_path):
         """Load the game map from a CSV file and extract Pac-Man & Ghost positions."""
@@ -54,20 +47,20 @@ class Game:
 
         for y, row in enumerate(map_data):
             for x, tile in enumerate(row):
-                if tile == 1:  # Wall
-                    new_wall = wall.Wall(None, ((x + utils.x_offset) * self.tile_size, y * self.tile_size), (self.tile_size, self.tile_size))
-                    self.walls.add(new_wall)
-                elif tile in wall.wall_types: # walls
+                # if tile == 1:  # Wall
+                #     new_wall = wall.Wall(None, ((x + utils.x_offset) * self.tile_size, y * self.tile_size), (self.tile_size, self.tile_size))
+                #     self.walls.add(new_wall)
+                if tile in wall.wall_types:
                     new_wall = wall.Wall(wall.wall_types[tile], ((x + utils.x_offset) * self.tile_size, (y + utils.y_offset) * self.tile_size), (self.tile_size, self.tile_size))
                     self.walls.add(new_wall)
                 # elif tile == 6:  # Pac-Man
                 #     pacman_pos = (x + utils.x_offset, y + utils.y_offset)  # Store grid position
                 #     print(f"Pac-Man found at: {pacman_pos}")
-                elif tile in {2, 3, 4, 5}:  # Ghosts (different colors)
-                    ghost_positions.append((x + utils.x_offset, y + utils.y_offset))
-                    self.food.add(Food("pellet", ((x + utils.x_offset) * self.tile_size, (y + utils.y_offset) * self.tile_size), self.tile_size))
+                # elif tile in {2, 3, 4, 5}:  # Ghosts (different colors)
+                #     ghost_positions.append((x + utils.x_offset, y + utils.y_offset))
+                    # self.original_food.add(Food("pellet", ((x + utils.x_offset) * self.tile_size, (y + utils.y_offset) * self.tile_size), self.tile_size))
                 elif tile == 0:
-                    self.food.add(Food("pellet", ((x + utils.x_offset) * self.tile_size, (y + utils.y_offset) * self.tile_size), self.tile_size))
+                    self.original_food.add(Food("pellet", ((x + utils.x_offset) * self.tile_size, (y + utils.y_offset) * self.tile_size), self.tile_size))
 
         return np.array(map_data), pacman_pos, ghost_positions
     
@@ -195,6 +188,7 @@ class Game:
             self.map_state_list = self.map_state_list[1:]
             self.pacman = None
             self.ghosts = None
+            self.food = None
 
             self.ending_scene(current_screen)
 
@@ -265,6 +259,7 @@ class Game:
             self.map_state = self.map_state_list[0]
             self.pacman = pygame.sprite.GroupSingle(self.create_pacman())
             self.ghosts = pygame.sprite.Group(*self.create_ghosts())
+            self.food = self.original_food.copy()
             self.current_scene = "game"
 
     def intro_scene(self):
@@ -294,6 +289,7 @@ class Game:
                     self.current_scene = "game" 
                     self.pacman = pygame.sprite.GroupSingle(self.create_pacman())
                     self.ghosts = pygame.sprite.Group(*self.create_ghosts())
+                    self.food = self.original_food.copy()
                     return     
 
     def run(self):
