@@ -27,7 +27,7 @@ class Pacman(pygame.sprite.Sprite):
         self.pacman_index = 0
         self.image = self.sprites[self.direction][int(self.pacman_index)]
         self.rect = self.image.get_rect(topleft=position)
-        self.speed = 32
+        self.speed = 16
         self.grid_size = 16  # Adjust based on map tile size
         self.score = 0
 

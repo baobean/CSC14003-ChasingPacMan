@@ -267,8 +267,6 @@ class Game:
             self.ghosts = pygame.sprite.Group(*self.create_ghosts())
             
             self.food = self.copy_sprites(self.original_food)
-            # self.food.draw(self.screen)
-            print(self.food.sprites() == self.original_food.sprites())
             self.current_scene = "game"
 
     def intro_scene(self):
