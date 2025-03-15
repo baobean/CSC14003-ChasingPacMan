@@ -15,7 +15,9 @@ class Ghost(pygame.sprite.Sprite):
         self.direction = "right"  # Default direction
         self.image = self.frames["right"][0]  # Set initial frame
         self.rect = self.image.get_rect(topleft=position)
-        self.speed = 4  # Adjust speed if needed
+        self.target_x = self.rect.x
+        self.target_y = self.rect.y
+        self.speed = 2  # Adjust speed if needed
         
 
     def load_frames(self, ghost_type):
@@ -69,12 +71,28 @@ class Ghost(pygame.sprite.Sprite):
         self.image = self.frames[self.direction][int(self.animation_index)]
 
     def update(self, walls, map_state, positions):
+        if self.rect.x != self.target_x or self.rect.y != self.target_y:
+            if self.rect.x < self.target_x:
+                self.rect.x += min(self.speed, self.target_x - self.rect.x)
+            elif self.rect.x > self.target_x:
+                self.rect.x -= min(self.speed, self.rect.x - self.target_x)
+
+            if self.rect.y < self.target_y:
+                self.rect.y += min(self.speed, self.target_y - self.rect.y)
+            elif self.rect.y > self.target_y:
+                self.rect.y -= min(self.speed, self.rect.y - self.target_y)
+
+            self.animation_state()  
+            return  # Pr
         if self.algorithm:
             next_pos, tmp_node, memory_usage = self.algorithm(map_state, positions)
+
+
             
             if isinstance(next_pos, tuple) and len(next_pos) == 2:  # Ensure next_pos is a valid (x, y) tuple
                 self.direction = self.determine_direction(next_pos)
-                self.rect.x, self.rect.y = (next_pos[0] + utils.x_offset) * utils.tile_size, (next_pos[1] + utils.y_offset) * utils.tile_size
+                self.target_x = (next_pos[0] + utils.x_offset) * utils.tile_size
+                self.target_y = (next_pos[1] + utils.y_offset) * utils.tile_size
 
             # if pygame.sprite.spritecollide(self, walls, False):  # Now using `self` instead of `test_rect`
             #     print("Collision detected! (Ghost)")
