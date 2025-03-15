@@ -209,9 +209,13 @@ class Game:
         all_ghosts_positions = [(ghost.rect.x // self.tile_size - utils.x_offset, ghost.rect.y // self.tile_size - utils.y_offset) for ghost in self.ghosts]
 
         self.check_collisions()
-        if self.level == 1:
+        if len(self.map_state_list) == 0:
+            return
+        if self.level == 6:
             self.pacman.update(self.walls, self.ghosts)
             self.check_collisions()
+            if len(self.map_state_list) == 0:
+                return
         # Update each ghost
         for i, ghost in enumerate(self.ghosts):
             ghost_pos = (ghost.rect.x // self.tile_size - utils.x_offset, ghost.rect.y // self.tile_size - utils.y_offset)
@@ -235,7 +239,7 @@ class Game:
                 sys.exit()        
 
         pygame.display.flip()
-        self.clock.tick(10)
+        self.clock.tick(7.5)
 
     def capture_screen(self):
         screen_copy = pygame.display.get_surface().copy()
