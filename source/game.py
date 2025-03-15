@@ -13,6 +13,7 @@ import sys
 class Game:
     def __init__(self, map_file="map.csv"):
         pygame.init()
+        pygame.mixer.init()
         self.level = 1
         self.current_scene = "intro"
         self.tile_size = utils.tile_size
@@ -22,8 +23,16 @@ class Game:
         pygame.display.set_caption("Pac-Man AI")
 
         self.clock = pygame.time.Clock()
-        self.heading_font = pygame.font.Font("assets/text/PAC-FONT.TTF", 48)
+        self.header_font = pygame.font.Font("assets/text/PAC-FONT.TTF", 48)
         self.text_font = pygame.font.Font("assets/text/Emulogic-zrEw.ttf", 13)
+        self.bgm = pygame.mixer.Sound("assets/audio/game_start.wav")
+        self.munch_sounds = [
+            pygame.mixer.Sound("assets/audio/munch_1.wav"),
+            pygame.mixer.Sound("assets/audio/munch_2.wav")
+        ]
+        self.munch_index = 0
+        self.death_sound = pygame.mixer.Sound("assets/audio/pacman_death.wav")
+        self.death_sound.set_volume(0.25)
 
         self.text_renderer = TextRenderer()
         wall.wall_images = wall.initialize_walls()
@@ -182,9 +191,12 @@ class Game:
         """Check if Pacman collides with any food"""
         eaten_food = pygame.sprite.spritecollide(self.pacman.sprite, self.food, True)
         if eaten_food:
+            self.munch_sounds[self.munch_index].play()
+            self.munch_index = (self.munch_index + 1) % 2
             self.pacman.sprite.score += 100
         pacman_touched = pygame.sprite.spritecollide(self.pacman.sprite, self.ghosts, False)
         if pacman_touched:
+            self.death_sound.play()
             self.current_scene = "ending"
             current_screen = self.capture_screen()
             self.pacman.sprite.score = 0
@@ -295,14 +307,14 @@ class Game:
         start_x = (self.screen_width - total_width) // 2
 
         max_y = base_y + 20  # Maximum bounce height
-        speed = 0.01  # Speed of movement
+        speed = 0.01  # Speed of movement (increased for better visibility)
 
-        # Initialize ghost positions if not already set
-        if not hasattr(self, "ghosts"):
-            self.ghosts = [{"x": start_x + i * (ghost_width + spacing), "y": base_y, "direction": 1, "current_frame": 0} for i in range(4)]
+        # ✅ Create a separate ghost animation list (instead of using `self.ghosts`)
+        if not hasattr(self, "animated_ghosts") or self.current_scene == "loading":
+            self.animated_ghosts = [{"x": start_x + i * (ghost_width + spacing), "y": base_y, "direction": 1, "current_frame": 0} for i in range(4)]
 
-        # Update ghost positions
-        for ghost in self.ghosts:
+        # ✅ Update ghost positions independently from `self.ghosts`
+        for ghost in self.animated_ghosts:
             ghost["y"] += ghost["direction"] * speed
 
             # Reverse direction at boundaries and switch animation frame
@@ -310,15 +322,16 @@ class Game:
                 ghost["direction"] *= -1  # Reverse direction
                 ghost["current_frame"] = 1 if ghost["direction"] > 0 else 0  # Change image based on direction
 
-        # Draw ghosts
-        for i, ghost in enumerate(self.ghosts):
+        # ✅ Draw ghosts
+        for i, ghost in enumerate(self.animated_ghosts):
             frame = self.ghost_images[i][ghost["current_frame"]]  # Select frame based on movement direction
             self.screen.blit(frame, (ghost["x"], int(ghost["y"])))
+
                 
     def loading_scene(self, text):
         """Displays a loading screen with animated ghosts moving up and down."""
-        if hasattr(self, "ghosts"):
-            delattr(self, "ghosts")  
+        if hasattr(self, "animated_ghosts"):
+            delattr(self, "animated_ghosts")  
         running = True
         while running:
             # Clear screen
@@ -352,11 +365,12 @@ class Game:
         self.dropdown_active = False  # Controls whether level selection is open
         selected_option = 0  # 0 = Level, 1 = Quit
         self.level = 0  # Start at LEVEL 1
-
+        if hasattr(self, "animated_ghosts"):
+            delattr(self, "animated_ghosts")  
         while running:
             self.screen.fill((0, 0, 0))
             self.ghost_animation(50)
-            heading_text = self.heading_font.render("PACMAN", True, 'yellow')
+            heading_text = self.header_font.render("PACMAN", True, 'yellow')
             heading_x = (self.screen_width - heading_text.get_width()) // 2
             self.screen.blit(heading_text, (heading_x, 120))
             text_surfaces = [
@@ -431,8 +445,6 @@ class Game:
             self.start_loading_time = pygame.time.get_ticks()  # ✅ Start timer
             self.dropdown_active = False
             
-        
-
 
     def render_multi_line(self, surfaces, start_y, return_positions=False, center=True):
         """Properly centers multiple lines of text and optionally returns positions."""
@@ -463,7 +475,7 @@ class Game:
 
     def run(self):
         """Main game loop"""
-        
+        self.bgm.play(-1)
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -474,5 +486,6 @@ class Game:
                 self.intro_scene()
             if self.current_scene == 'loading':
                 self.loading_scene(f"LOADING LEVEL {self.level}...")
+                self.bgm.stop()
             elif self.current_scene == 'game':
                 self.game_scene()
