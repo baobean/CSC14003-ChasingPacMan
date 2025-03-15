@@ -82,7 +82,7 @@ class Game:
             {"pacman": (1, 1), "ghost": (9, 1)},
             {"pacman": (1, 1), "ghost": (26, 29)},
             {"pacman": (1, 1), "ghost": (3, 26)},
-            {"pacman": (1, 1), "ghost": (7, 1)}
+            {"pacman": (1, 1), "ghost": (1, 20)}
         ]
         test_cases_2 = [
             {"pacman": (1, 1), "blue_ghost": (26, 29), "pink_ghost": (3,26), "orange_ghost": (6,23), "red_ghost": (7,1)},
