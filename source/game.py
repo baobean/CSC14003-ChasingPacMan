@@ -211,7 +211,7 @@ class Game:
         self.check_collisions()
         if self.level == 1:
             self.pacman.update(self.walls, self.ghosts)
-        self.check_collisions()
+            self.check_collisions()
         # Update each ghost
         for i, ghost in enumerate(self.ghosts):
             ghost_pos = (ghost.rect.x // self.tile_size - utils.x_offset, ghost.rect.y // self.tile_size - utils.y_offset)
@@ -232,11 +232,7 @@ class Game:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-                sys.exit()
-
-        if self.level == 6:
-            self.pacman.update(self.walls, self.ghosts)
-        self.check_collisions()            
+                sys.exit()        
 
         pygame.display.flip()
         self.clock.tick(10)
