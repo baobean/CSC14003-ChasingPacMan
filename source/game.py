@@ -256,7 +256,8 @@ class Game:
         
         # Allow Pac-Man to move only in level 6
         if self.level == 6:
-            self.pacman.update(self.walls, self.ghosts)
+            # self.pacman.update(self.walls, self.ghosts)
+            self.pacman.update(self.walls)
             self.check_collisions()
             if len(self.map_state_list) == 0:
                 return
