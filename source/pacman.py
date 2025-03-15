@@ -27,7 +27,7 @@ class Pacman(pygame.sprite.Sprite):
         self.pacman_index = 0
         self.image = self.sprites[self.direction][int(self.pacman_index)]
         self.rect = self.image.get_rect(topleft=position)
-        self.speed = 4
+        self.speed = 32
         self.grid_size = 16  # Adjust based on map tile size
         self.score = 0
 
@@ -52,7 +52,7 @@ class Pacman(pygame.sprite.Sprite):
         # Check if test_sprite collides with any wall
         collision = pygame.sprite.spritecollideany(test_sprite, walls)
         
-        print(f"Trying to move {direction}: {'Blocked' if collision else 'Clear'} at {test_sprite.rect.topleft}")
+        # print(f"Trying to move {direction}: {'Blocked' if collision else 'Clear'} at {test_sprite.rect.topleft}")
         
         return collision is None
 

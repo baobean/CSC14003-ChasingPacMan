@@ -25,11 +25,19 @@ class Game:
         self.text_renderer = TextRenderer()
         wall.wall_images = wall.initialize_walls()
         self.original_food = pygame.sprite.Group()  # Initialize food group
+        self.food = pygame.sprite.Group()  # Initialize food group
         # Load map and get Pac-Man & Ghosts' positions
         self.map_data, pacman_pos, ghost_positions = self.load_map(map_file)
 
         # Assign correct map weights using detected positions
         self.original_map_state = self.assign_weights(self.map_data, pacman_pos, ghost_positions)
+    
+    def copy_sprites(self, original_group):
+        new_group = pygame.sprite.Group()
+        for sprite in original_group.sprites():
+            new_sprite = sprite.copy()
+            new_group.add(new_sprite)
+        return new_group
 
     def load_map(self, file_path):
         """Load the game map from a CSV file and extract Pac-Man & Ghost positions."""
@@ -47,20 +55,11 @@ class Game:
 
         for y, row in enumerate(map_data):
             for x, tile in enumerate(row):
-                # if tile == 1:  # Wall
-                #     new_wall = wall.Wall(None, ((x + utils.x_offset) * self.tile_size, y * self.tile_size), (self.tile_size, self.tile_size))
-                #     self.walls.add(new_wall)
                 if tile in wall.wall_types:
                     new_wall = wall.Wall(wall.wall_types[tile], ((x + utils.x_offset) * self.tile_size, (y + utils.y_offset) * self.tile_size), (self.tile_size, self.tile_size))
                     self.walls.add(new_wall)
-                # elif tile == 6:  # Pac-Man
-                #     pacman_pos = (x + utils.x_offset, y + utils.y_offset)  # Store grid position
-                #     print(f"Pac-Man found at: {pacman_pos}")
-                # elif tile in {2, 3, 4, 5}:  # Ghosts (different colors)
-                #     ghost_positions.append((x + utils.x_offset, y + utils.y_offset))
-                    # self.original_food.add(Food("pellet", ((x + utils.x_offset) * self.tile_size, (y + utils.y_offset) * self.tile_size), self.tile_size))
                 elif tile == 0:
-                    self.original_food.add(Food("pellet", ((x + utils.x_offset) * self.tile_size, (y + utils.y_offset) * self.tile_size), self.tile_size))
+                    self.original_food.add(Food("pellet", ((x + utils.x_offset) * self.tile_size, (y + utils.y_offset) * self.tile_size)))
 
         return np.array(map_data), pacman_pos, ghost_positions
     
@@ -232,11 +231,12 @@ class Game:
                 pygame.quit()
                 sys.exit()
 
-        # self.pacman.update(self.walls, self.ghosts)
+        if self.level == 6:
+            self.pacman.update(self.walls, self.ghosts)
         self.check_collisions()            
 
         pygame.display.flip()
-        self.clock.tick(7.5)
+        self.clock.tick(10)
 
     def capture_screen(self):
         screen_copy = pygame.display.get_surface().copy()
@@ -262,7 +262,10 @@ class Game:
             self.map_state = self.map_state_list[0]
             self.pacman = pygame.sprite.GroupSingle(self.create_pacman())
             self.ghosts = pygame.sprite.Group(*self.create_ghosts())
-            self.food = self.original_food.copy()
+            
+            self.food = self.copy_sprites(self.original_food)
+            # self.food.draw(self.screen)
+            print(self.food.sprites() == self.original_food.sprites())
             self.current_scene = "game"
 
     def intro_scene(self):
@@ -292,7 +295,7 @@ class Game:
                     self.current_scene = "game" 
                     self.pacman = pygame.sprite.GroupSingle(self.create_pacman())
                     self.ghosts = pygame.sprite.Group(*self.create_ghosts())
-                    self.food = self.original_food.copy()
+                    self.food = self.copy_sprites(self.original_food)
                     return     
 
     def run(self):

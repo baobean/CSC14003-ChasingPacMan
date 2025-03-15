@@ -3,7 +3,7 @@ import pygame
 class Food(pygame.sprite.Sprite):
     food_images = {}
 
-    def __init__(self, food_type, position, size):
+    def __init__(self, food_type, position):
         super().__init__()
 
         if food_type not in Food.food_images:
@@ -12,3 +12,6 @@ class Food(pygame.sprite.Sprite):
         self.food_type = food_type
         self.image = Food.food_images[food_type]
         self.rect = self.image.get_rect(topleft=position)
+
+    def copy(self):
+        return Food(self.food_type, self.rect.topleft) 
