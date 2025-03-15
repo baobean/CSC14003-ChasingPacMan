@@ -4,7 +4,6 @@ import utils
 wall_types = {7: "top", 8: "right", 9: "bottom", 10: "left", 11: "top_left", 12: "top_right", 13: "bottom_right", 14: "bottom_left"}
 
 def initialize_walls():
-    # no, rotate the images to get other directions
     wall_images = {}
 
     initial_types = ["top", "top_left"]
@@ -32,7 +31,7 @@ class Wall(pygame.sprite.Sprite):
         self.wall_type = wall_type
         if (wall_type == None):
             self.image = pygame.Surface(size)
-            self.image.fill((0, 0, 255))  # Blue walls
+            self.image.fill((0, 0, 255)) 
         else:
             self.image = wall_images[wall_type]
         

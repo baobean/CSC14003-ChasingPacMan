@@ -31,7 +31,7 @@ class Pacman(pygame.sprite.Sprite):
         self.target_x = self.rect.x
         self.target_y = self.rect.y
         self.speed = 2
-        self.grid_size = 16  # Adjust based on map tile size
+        self.grid_size = 16  
         self.score = 0
 
     def animation_state(self):
@@ -39,9 +39,8 @@ class Pacman(pygame.sprite.Sprite):
         self.image = self.sprites[self.direction][int(self.pacman_index)]  
 
     def can_move(self, direction, walls):
-        """Check if Pac-Man can move in the given direction."""
-        test_sprite = pygame.sprite.Sprite()  # Create a temporary sprite
-        test_sprite.rect = self.rect.copy()  # Copy Pac-Man's current position
+        test_sprite = pygame.sprite.Sprite()  
+        test_sprite.rect = self.rect.copy()  
 
         if direction == "left":
             test_sprite.rect.x -= utils.tile_size
@@ -52,15 +51,11 @@ class Pacman(pygame.sprite.Sprite):
         elif direction == "down":
             test_sprite.rect.y += utils.tile_size
 
-        # Check if test_sprite collides with any wall
         collision = pygame.sprite.spritecollideany(test_sprite, walls)
-        
-        # print(f"Trying to move {direction}: {'Blocked' if collision else 'Clear'} at {test_sprite.rect.topleft}")
         
         return collision is None
 
     def handle_input(self):
-        """Check user input and update intended direction."""
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT]:
             self.intended_direction = "left"
@@ -75,20 +70,17 @@ class Pacman(pygame.sprite.Sprite):
             self.intended_direction = "down"
             print("Down key pressed")
 
-    def update(self, walls, ghosts):
-        self.handle_input()  # Continuously check for input
-
-        # If the intended direction is valid and different, switch to it mid-move
+    def update(self, walls):
+        self.handle_input()  
+        
         if self.intended_direction and self.intended_direction != self.direction:
             if self.can_move(self.intended_direction, walls):
                 self.direction = self.intended_direction
-                self.intended_direction = None  # Clear intended direction after switching
+                self.intended_direction = None 
 
-                # Align position before changing direction (ensuring tile alignment)
                 self.rect.x = (self.rect.x // utils.tile_size) * utils.tile_size
                 self.rect.y = (self.rect.y // utils.tile_size) * utils.tile_size
 
-                # Set new target
                 if self.direction == "left":
                     self.target_x = max(0, self.rect.x - utils.tile_size)
                 elif self.direction == "right":
@@ -98,7 +90,6 @@ class Pacman(pygame.sprite.Sprite):
                 elif self.direction == "down":
                     self.target_y = (self.rect.y + utils.tile_size) // utils.tile_size * utils.tile_size
 
-        # Continue moving towards the target tile
         if self.rect.x != self.target_x or self.rect.y != self.target_y:
             if self.rect.x < self.target_x:
                 self.rect.x += min(self.speed, self.target_x - self.rect.x)
@@ -112,12 +103,10 @@ class Pacman(pygame.sprite.Sprite):
 
             self.animation_state()
 
-            return  # Continue moving without recalculating a new target
+            return 
 
-        # If movement to the tile is completed, allow new movement decision
         self.handle_input()
 
-        # Ensure direction is valid before committing to movement
         if self.can_move(self.direction, walls):
             if self.direction == "left":
                 self.target_x = max(0, self.rect.x - utils.tile_size)
@@ -128,5 +117,4 @@ class Pacman(pygame.sprite.Sprite):
             elif self.direction == "down":
                 self.target_y = (self.rect.y + utils.tile_size) // utils.tile_size * utils.tile_size
 
-        # Update animation state
         self.animation_state()

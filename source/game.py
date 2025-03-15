@@ -228,7 +228,7 @@ class Game:
         if len(self.map_state_list) == 0:
             return
         if self.level == 6:
-            self.pacman.update(self.walls, self.ghosts)
+            self.pacman.update(self.walls)
             self.check_collisions()
             if len(self.map_state_list) == 0:
                 return
@@ -246,7 +246,7 @@ class Game:
                 "ghost": ghost_pos  # The specific ghost moving
             }
 
-            ghost.update(self.walls, self.map_state, positions)
+            ghost.update(self.map_state, positions)
             all_ghosts_positions[i] = (ghost.rect.x // self.tile_size - utils.x_offset, ghost.rect.y // self.tile_size - utils.y_offset)
         # Process events
         for event in pygame.event.get():

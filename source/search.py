@@ -4,8 +4,6 @@ import tracemalloc
 import time
 
 def bfs_algorithm(map_state, positions):
-    """Return the next appropriate move using BFS algorithm"""
-
     start = positions["ghost"]
     goal = positions["pacman"]
     other_ghosts = set(positions["ghosts"])
@@ -14,7 +12,6 @@ def bfs_algorithm(map_state, positions):
     visited = set([start])
     parent = {}
 
-    # Set things up for tracking
     expanded_nodes = 0  
     tracemalloc.start()  
 
@@ -35,8 +32,8 @@ def bfs_algorithm(map_state, positions):
                 next_move = path[::-1][0] 
 
                 if next_move in other_ghosts and next_move != goal:
-                    next_move = start # The ghost will stop and wait
-            else: # Ghost is at already at pacman's position
+                    next_move = start 
+            else: 
                 next_move = start 
 
             return next_move, expanded_nodes, memory_usage
@@ -52,26 +49,22 @@ def bfs_algorithm(map_state, positions):
                 visited.add(next_pos)
                 parent[next_pos] = current
 
-    # BFS failed to find a path
     memory_usage = tracemalloc.get_traced_memory()[1]
-    tracemalloc.stop()  # Stop memory tracking
-    return (-1, -1), expanded_nodes, memory_usage  # No path found
+    tracemalloc.stop()  
+    return (-1, -1), expanded_nodes, memory_usage  
 
 
 def dls(curr_pos, goal, depth, map_state, other_ghosts, visited, parent):
-    # Depth-Limited Search (DLS) function
     if depth >= 0:
         if curr_pos == goal:
-            # If the current position is the goal, return the current position
             return curr_pos
         visited.add(curr_pos)
-        # Explore the four possible directions (up, left, down, right)
+
         for dx, dy in [(-1, 0), (0, -1), (1, 0), (0, 1)]:
             next_pos = (curr_pos[0] + dx, curr_pos[1] + dy)
-            # Check if the next position is valid and not visited
+            
             if next_pos not in visited and map_state[next_pos[1]][next_pos[0]] != float('inf'):
                 parent[next_pos] = curr_pos
-                # Recursive call to DLS with decremented depth
                 found = dls(next_pos, goal, depth - 1, map_state, other_ghosts, visited, parent)
                 if found:
                     return found
@@ -79,67 +72,62 @@ def dls(curr_pos, goal, depth, map_state, other_ghosts, visited, parent):
     return None
 
 def ids_algorithm(map_state, positions):
-    # Iterative Deepening Search (IDS) algorithm
     start = positions["ghost"]
     goal = positions["pacman"]
     other_ghosts = set(positions["ghosts"])
 
-    expanded_nodes = 0  # Count expanded nodes
-    tracemalloc.start()  # Start memory tracking
+    expanded_nodes = 0  
+    tracemalloc.start()  
 
     depth = 0
     while True:
         visited = set()
         parent = {}
-        # Perform Depth-Limited Search (DLS) up to the current depth
         result = dls(start, goal, depth, map_state, other_ghosts, visited, parent)
         expanded_nodes += len(visited)
         if result:
-            # If goal is found, reconstruct the path
             path = []
             current_pos = result
             while current_pos != start:
                 path.append(current_pos)
                 current_pos = parent[current_pos]
 
-            memory_usage = tracemalloc.get_traced_memory()[1]  # Peak memory usage
+            memory_usage = tracemalloc.get_traced_memory()[1] 
             tracemalloc.stop()
             if path:
                 next_move = path[::-1][0] 
 
                 if next_move in other_ghosts and next_move != goal:
-                    next_move = start # The ghost will stop and wait
-            else: # Ghost is at already at pacman's position
+                    next_move = start 
+            else:
                 next_move = start 
 
             return next_move, expanded_nodes, memory_usage
         depth += 1
 
-        # If depth exceeds a reasonable limit, break to prevent infinite loop
         if depth > len(map_state) * len(map_state[0]):
             break
 
-    memory_usage = tracemalloc.get_traced_memory()[1]  # Peak memory usage
+    memory_usage = tracemalloc.get_traced_memory()[1]  
     tracemalloc.stop()
     return (-1, -1), expanded_nodes, memory_usage
 
 def ucs_algorithm(map_state, positions):
-    """Uniform-Cost Search for a specific ghost, avoiding other ghosts"""
 
-    start = positions["ghost"]  # The ghost that is currently moving
-    goal = positions["pacman"]  # Pac-Man's position
-    other_ghosts = set(positions["ghosts"])  # Other ghosts' positions
+    start = positions["ghost"]  
+    goal = positions["pacman"] 
+    other_ghosts = set(positions["ghosts"])  
 
-    cell_value = map_state[goal[1]][goal[0]]  # Get the cost of the current cell
-    map_state[goal[1]][goal[0]] = -10  # Set the cost of the goal cell to 0
+    cell_value = map_state[goal[1]][goal[0]]  
+    map_state[goal[1]][goal[0]] = -10 
 
-    pq = [(0, start)]  # Priority queue (cost, position)
-    visited = set()  # Use set for fast lookup
+    pq = [(0, start)]  
+    visited = set() 
     parent = {start: None}
     cost_so_far = {start: 0}
 
-    expanded_nodes = 0  # Count expanded nodes
-    tracemalloc.start()  # Start memory tracking
+    expanded_nodes = 0  
+    tracemalloc.start()  
 
     while pq:
         cost, current = heapq.heappop(pq)
@@ -155,21 +143,21 @@ def ucs_algorithm(map_state, positions):
                 path.append(current)
                 current = parent[current]
 
-            memory_usage = tracemalloc.get_traced_memory()[1]  # Peak memory usage
+            memory_usage = tracemalloc.get_traced_memory()[1]  
             tracemalloc.stop()
 
             if path:
                 next_move = path[::-1][0] 
 
                 if next_move in other_ghosts and next_move != goal:
-                    next_move = start # The ghost will stop and wait
-            else: # Ghost is at already at pacman's position
+                    next_move = start 
+            else: 
                 next_move = start 
 
-            map_state[goal[1]][goal[0]] = cell_value  # Reset the goal cell value
+            map_state[goal[1]][goal[0]] = cell_value  
             return next_move, expanded_nodes, memory_usage
 
-        for dx, dy in [(-1, 0), (0, -1), (1, 0), (0, 1)]:  # Left → Up → Right → Down
+        for dx, dy in [(-1, 0), (0, -1), (1, 0), (0, 1)]:  
             next_pos = (current[0] + dx, current[1] + dy)
             new_cost = cost_so_far[current] + map_state[next_pos[1]][next_pos[0]]
 
@@ -184,8 +172,8 @@ def ucs_algorithm(map_state, positions):
     memory_usage = tracemalloc.get_traced_memory()[1]
     tracemalloc.stop()
 
-    map_state[goal[1]][goal[0]] = cell_value  # Reset the goal cell value
-    return (-1, -1), expanded_nodes, memory_usage  # No path found
+    map_state[goal[1]][goal[0]] = cell_value 
+    return (-1, -1), expanded_nodes, memory_usage  
     
 def astar_algorithm(map_state, positions):
     start = positions["ghost"]
@@ -216,8 +204,8 @@ def astar_algorithm(map_state, positions):
                 next_move = path[::-1][0] 
 
                 if next_move in other_ghosts and next_move != goal:
-                    next_move = start # The ghost will stop and wait
-            else: # Ghost is at already at pacman's position
+                    next_move = start 
+            else: 
                 next_move = start 
 
             return next_move, expanded_nodes, memory_usage
