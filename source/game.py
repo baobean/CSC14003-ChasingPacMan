@@ -310,7 +310,7 @@ class Game:
         speed = 0.01  # Speed of movement (increased for better visibility)
 
         # ✅ Create a separate ghost animation list (instead of using `self.ghosts`)
-        if not hasattr(self, "animated_ghosts") or self.current_scene == "loading":
+        if not hasattr(self, "animated_ghosts"):
             self.animated_ghosts = [{"x": start_x + i * (ghost_width + spacing), "y": base_y, "direction": 1, "current_frame": 0} for i in range(4)]
 
         # ✅ Update ghost positions independently from `self.ghosts`
@@ -481,11 +481,12 @@ class Game:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
-
             if self.current_scene == 'intro':
+                if not pygame.mixer.get_busy():  # ✅ Restart music if it's stopped
+                    self.bgm.play(-1)
                 self.intro_scene()
             if self.current_scene == 'loading':
                 self.loading_scene(f"LOADING LEVEL {self.level}...")
-                self.bgm.stop()
             elif self.current_scene == 'game':
+                self.bgm.stop()
                 self.game_scene()
