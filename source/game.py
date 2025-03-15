@@ -307,14 +307,14 @@ class Game:
         start_x = (self.screen_width - total_width) // 2
 
         max_y = base_y + 20  # Maximum bounce height
-        speed = 0.01  # Speed of movement
+        speed = 0.01  # Speed of movement (increased for better visibility)
 
-        # Initialize ghost positions if not already set
-        if not hasattr(self, "ghosts"):
-            self.ghosts = [{"x": start_x + i * (ghost_width + spacing), "y": base_y, "direction": 1, "current_frame": 0} for i in range(4)]
+        # ✅ Create a separate ghost animation list (instead of using `self.ghosts`)
+        if not hasattr(self, "animated_ghosts") or self.current_scene == "loading":
+            self.animated_ghosts = [{"x": start_x + i * (ghost_width + spacing), "y": base_y, "direction": 1, "current_frame": 0} for i in range(4)]
 
-        # Update ghost positions
-        for ghost in self.ghosts:
+        # ✅ Update ghost positions independently from `self.ghosts`
+        for ghost in self.animated_ghosts:
             ghost["y"] += ghost["direction"] * speed
 
             # Reverse direction at boundaries and switch animation frame
@@ -322,10 +322,11 @@ class Game:
                 ghost["direction"] *= -1  # Reverse direction
                 ghost["current_frame"] = 1 if ghost["direction"] > 0 else 0  # Change image based on direction
 
-        # Draw ghosts
-        for i, ghost in enumerate(self.ghosts):
+        # ✅ Draw ghosts
+        for i, ghost in enumerate(self.animated_ghosts):
             frame = self.ghost_images[i][ghost["current_frame"]]  # Select frame based on movement direction
             self.screen.blit(frame, (ghost["x"], int(ghost["y"])))
+
                 
     def loading_scene(self, text):
         """Displays a loading screen with animated ghosts moving up and down."""
