@@ -243,7 +243,7 @@ class Game:
                 sys.exit()        
 
         pygame.display.flip()
-        self.clock.tick(30)
+        self.clock.tick(45)
 
     def capture_screen(self):
         screen_copy = pygame.display.get_surface().copy()

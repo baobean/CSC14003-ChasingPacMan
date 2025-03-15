@@ -4,6 +4,9 @@ import search
 import utils
 
 class Ghost(pygame.sprite.Sprite):
+    directions = ["right", "left", "up", "down"]  # List of directions
+    frames_cache = {}
+
     def __init__(self, ghost_type, position):
         super().__init__()
         self.ghost_type = ghost_type
@@ -22,16 +25,19 @@ class Ghost(pygame.sprite.Sprite):
 
     def load_frames(self, ghost_type):
         """Load ghost animation frames for all directions"""
-        directions = ["right", "left", "up", "down"]
-        frames = {dir: [] for dir in directions}  # Dictionary to store frames by direction
+        if ghost_type in Ghost.frames_cache:
+            return Ghost.frames_cache[ghost_type]  # Return cached frames
+        
+        frames = {dir: [] for dir in Ghost.directions}  # Dictionary to store frames by direction
 
-        for i, direction in enumerate(directions, start=1):  
+        for i, direction in enumerate(Ghost.directions, start=1):  
             for j in range(1, 3):  # Two images per direction
                 image_path = f'assets/ghost/{ghost_type.lower()}_{i}.{j}.png'
                 frame = pygame.image.load(image_path).convert_alpha()
                 # frame = pygame.transform.scale2x(frame)
                 frames[direction].append(frame)
 
+        Ghost.frames_cache[ghost_type] = frames  # Store frames in cache
         return frames  # Return dictionary of animations
 
     def assign_algorithm(self, ghost_type):
