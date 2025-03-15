@@ -273,8 +273,8 @@ class Game:
                 "ghosts": other_ghosts_positions,  # Other ghosts except the one moving
                 "ghost": ghost_pos  # The specific ghost moving
             }
-
-            ghost.update(self.walls, self.map_state, positions)
+            # ghost.update(self.walls, self.map_state, positions)
+            ghost.update(self.map_state, positions)
             all_ghosts_positions[i] = (ghost.rect.x // self.tile_size - utils.x_offset, ghost.rect.y // self.tile_size - utils.y_offset)
         # Process events
         for event in pygame.event.get():
