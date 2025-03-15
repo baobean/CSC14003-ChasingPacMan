@@ -82,14 +82,14 @@ class Game:
             {"pacman": (1, 1), "ghost": (9, 1)},
             {"pacman": (1, 1), "ghost": (26, 29)},
             {"pacman": (1, 1), "ghost": (3, 26)},
-            {"pacman": (1, 1), "ghost": (7, 1)}
+            {"pacman": (1, 1), "ghost": (1, 20)}
         ]
         test_cases_2 = [
             {"pacman": (1, 1), "blue_ghost": (26, 29), "pink_ghost": (3,26), "orange_ghost": (6,23), "red_ghost": (7,1)},
-            {"pacman": (1,1), "blue_ghost": (3,26), "pink_ghost": (26,4), "orange_ghost": (5,5), "red_ghost": (1,20)},
-            {"pacman": (1,1), "blue_ghost": (9,8), "pink_ghost": (12, 28), "orange_ghost": (26,29), "red_ghost": (5,5)},
-            {"pacman": (1,1), "blue_ghost": (1,20), "pink_ghost": (9 ,8), "orange_ghost": (26,26), "red_ghost": (12,28)},
-            {"pacman": (1,1), "blue_ghost": (12,28), "pink_ghost": (7,1), "orange_ghost": (3,26), "red_ghost": (26,29)}
+            {"pacman": (1,1), "blue_ghost": (3,26), "pink_ghost": (26,4), "orange_ghost": (9,12), "red_ghost": (1,20)},
+            {"pacman": (1,1), "blue_ghost": (9,8), "pink_ghost": (9,1), "orange_ghost": (26,29), "red_ghost": (9,12)},
+            {"pacman": (1,1), "blue_ghost": (1,20), "pink_ghost": (9 ,8), "orange_ghost": (26,26), "red_ghost": (5,5)},
+            {"pacman": (1,1), "blue_ghost": (5,5), "pink_ghost": (9,12), "orange_ghost": (3,26), "red_ghost": (26,29)}
         ]
 
         if level <= 4:
