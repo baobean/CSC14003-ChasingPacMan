@@ -13,6 +13,7 @@ import sys
 class Game:
     def __init__(self, map_file="map.csv"):
         pygame.init()
+        pygame.mixer.init()
         self.level = 1
         self.current_scene = "intro"
         self.tile_size = utils.tile_size
@@ -22,8 +23,16 @@ class Game:
         pygame.display.set_caption("Pac-Man AI")
 
         self.clock = pygame.time.Clock()
-        self.heading_font = pygame.font.Font("assets/text/PAC-FONT.TTF", 48)
+        self.header_font = pygame.font.Font("assets/text/PAC-FONT.TTF", 48)
         self.text_font = pygame.font.Font("assets/text/Emulogic-zrEw.ttf", 13)
+        self.bgm = pygame.mixer.Sound("assets/audio/game_start.wav")
+        self.munch_sounds = [
+            pygame.mixer.Sound("assets/audio/munch_1.wav"),
+            pygame.mixer.Sound("assets/audio/munch_2.wav")
+        ]
+        self.munch_index = 0
+        self.death_sound = pygame.mixer.Sound("assets/audio/pacman_death.wav")
+        self.death_sound.set_volume(0.25)
 
         self.text_renderer = TextRenderer()
         wall.wall_images = wall.initialize_walls()
@@ -182,9 +191,12 @@ class Game:
         """Check if Pacman collides with any food"""
         eaten_food = pygame.sprite.spritecollide(self.pacman.sprite, self.food, True)
         if eaten_food:
+            self.munch_sounds[self.munch_index].play()
+            self.munch_index = (self.munch_index + 1) % 2
             self.pacman.sprite.score += 100
         pacman_touched = pygame.sprite.spritecollide(self.pacman.sprite, self.ghosts, False)
         if pacman_touched:
+            self.death_sound.play()
             self.current_scene = "ending"
             current_screen = self.capture_screen()
             self.pacman.sprite.score = 0
@@ -243,7 +255,7 @@ class Game:
                 sys.exit()        
 
         pygame.display.flip()
-        self.clock.tick(30)
+        self.clock.tick(45)
 
     def capture_screen(self):
         screen_copy = pygame.display.get_surface().copy()
@@ -356,7 +368,7 @@ class Game:
         while running:
             self.screen.fill((0, 0, 0))
             self.ghost_animation(50)
-            heading_text = self.heading_font.render("PACMAN", True, 'yellow')
+            heading_text = self.header_font.render("PACMAN", True, 'yellow')
             heading_x = (self.screen_width - heading_text.get_width()) // 2
             self.screen.blit(heading_text, (heading_x, 120))
             text_surfaces = [
@@ -431,8 +443,6 @@ class Game:
             self.start_loading_time = pygame.time.get_ticks()  # ✅ Start timer
             self.dropdown_active = False
             
-        
-
 
     def render_multi_line(self, surfaces, start_y, return_positions=False, center=True):
         """Properly centers multiple lines of text and optionally returns positions."""
@@ -463,7 +473,7 @@ class Game:
 
     def run(self):
         """Main game loop"""
-        
+        self.bgm.play(-1)
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -474,5 +484,6 @@ class Game:
                 self.intro_scene()
             if self.current_scene == 'loading':
                 self.loading_scene(f"LOADING LEVEL {self.level}...")
+                self.bgm.stop()
             elif self.current_scene == 'game':
                 self.game_scene()
