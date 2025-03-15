@@ -330,8 +330,8 @@ class Game:
                 
     def loading_scene(self, text):
         """Displays a loading screen with animated ghosts moving up and down."""
-        if hasattr(self, "ghosts"):
-            delattr(self, "ghosts")  
+        if hasattr(self, "animated_ghosts"):
+            delattr(self, "animated_ghosts")  
         running = True
         while running:
             # Clear screen
@@ -365,7 +365,8 @@ class Game:
         self.dropdown_active = False  # Controls whether level selection is open
         selected_option = 0  # 0 = Level, 1 = Quit
         self.level = 0  # Start at LEVEL 1
-
+        if hasattr(self, "animated_ghosts"):
+            delattr(self, "animated_ghosts")  
         while running:
             self.screen.fill((0, 0, 0))
             self.ghost_animation(50)
