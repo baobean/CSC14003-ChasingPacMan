@@ -130,6 +130,9 @@ def ucs_algorithm(map_state, positions):
     goal = positions["pacman"]  # Pac-Man's position
     other_ghosts = set(positions["ghosts"])  # Other ghosts' positions
 
+    cell_value = map_state[goal[1]][goal[0]]  # Get the cost of the current cell
+    map_state[goal[1]][goal[0]] = -10  # Set the cost of the goal cell to 0
+
     pq = [(0, start)]  # Priority queue (cost, position)
     visited = set()  # Use set for fast lookup
     parent = {start: None}
@@ -163,6 +166,7 @@ def ucs_algorithm(map_state, positions):
             else: # Ghost is at already at pacman's position
                 next_move = start 
 
+            map_state[goal[1]][goal[0]] = cell_value  # Reset the goal cell value
             return next_move, expanded_nodes, memory_usage
 
         for dx, dy in [(-1, 0), (0, -1), (1, 0), (0, 1)]:  # Left → Up → Right → Down
@@ -180,6 +184,7 @@ def ucs_algorithm(map_state, positions):
     memory_usage = tracemalloc.get_traced_memory()[1]
     tracemalloc.stop()
 
+    map_state[goal[1]][goal[0]] = cell_value  # Reset the goal cell value
     return (-1, -1), expanded_nodes, memory_usage  # No path found
     
 def astar_algorithm(map_state, positions):
