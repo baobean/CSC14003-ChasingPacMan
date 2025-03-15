@@ -86,10 +86,10 @@ class Game:
         ]
         test_cases_2 = [
             {"pacman": (1, 1), "blue_ghost": (26, 29), "pink_ghost": (3,26), "orange_ghost": (6,23), "red_ghost": (7,1)},
-            {"pacman": (1,1), "blue_ghost": (3,26), "pink_ghost": (26,29), "orange_ghost": (5,5), "red_ghost": (1,20)},
+            {"pacman": (1,1), "blue_ghost": (3,26), "pink_ghost": (26,4), "orange_ghost": (5,5), "red_ghost": (1,20)},
             {"pacman": (1,1), "blue_ghost": (9,8), "pink_ghost": (12, 28), "orange_ghost": (26,29), "red_ghost": (5,5)},
-            {"pacman": (1,1), "blue_ghost": (1,20), "pink_ghost": (26 ,26), "orange_ghost": (3,26), "red_ghost": (12,28)},
-            {"pacman": (1,1), "blue_ghost": (12,28), "pink_ghost": (6,23), "orange_ghost": (7,1), "red_ghost": (26,29)}
+            {"pacman": (1,1), "blue_ghost": (1,20), "pink_ghost": (9 ,8), "orange_ghost": (26,26), "red_ghost": (12,28)},
+            {"pacman": (1,1), "blue_ghost": (12,28), "pink_ghost": (7,1), "orange_ghost": (3,26), "red_ghost": (26,29)}
         ]
 
         if level <= 4:
