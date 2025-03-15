@@ -106,7 +106,7 @@ class Game:
         """Assign pathfinding weights to the map."""
         rows, cols = map_data.shape
         weight_map = np.zeros((rows, cols))  # Create a NumPy array for weights
-
+        print("hello")
         for i in range(rows):
             for j in range(cols):
                 cell = map_data[i][j]
@@ -208,6 +208,10 @@ class Game:
         # Get all ghost positions
         all_ghosts_positions = [(ghost.rect.x // self.tile_size - utils.x_offset, ghost.rect.y // self.tile_size - utils.y_offset) for ghost in self.ghosts]
 
+        self.check_collisions()
+        if self.level == 1:
+            self.pacman.update(self.walls, self.ghosts)
+        self.check_collisions()
         # Update each ghost
         for i, ghost in enumerate(self.ghosts):
             ghost_pos = (ghost.rect.x // self.tile_size - utils.x_offset, ghost.rect.y // self.tile_size - utils.y_offset)
@@ -224,7 +228,6 @@ class Game:
 
             ghost.update(self.walls, self.map_state, positions)
             all_ghosts_positions[i] = (ghost.rect.x // self.tile_size - utils.x_offset, ghost.rect.y // self.tile_size - utils.y_offset)
-
         # Process events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
