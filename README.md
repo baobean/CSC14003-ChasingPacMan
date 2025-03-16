@@ -9,4 +9,4 @@ This is a project from Introduction to Artificial Intelligence course, which con
 - Clone this repository.
 - Navigate to this directiory in a console.
 - Run the command `pip install -r requirements.txt`.
-- Run `main.py` by using command `python main.py`.
+- Run `main.py` by using command `python .\source\main.py`.
