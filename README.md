@@ -4,10 +4,9 @@ This is a project from Introduction to Artificial Intelligence course, which con
 ## Requirements
 - Python 3.12.9
 - pip - **newest version**
-- Pygame 2.6.1
-- NumPy 2.2.3
 
 ## Running the Source Code
 - Clone this repository.
 - Navigate to this directiory in a console.
+- Run the command `pip install -r requirements.txt`.
 - Run `main.py` by using command `python main.py`.
