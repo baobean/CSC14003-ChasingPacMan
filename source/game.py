@@ -98,8 +98,8 @@ class Game:
             {"pacman": (1, 1), "ghost": (7, 1)},
             {"pacman": (1, 1), "ghost": (10, 23)},
             {"pacman": (1, 1), "ghost": (26, 1)},
-            {"pacman": (1, 1), "ghost": (3, 26)},
-            {"pacman": (1, 1), "ghost": (1, 20)}
+            {"pacman": (1, 1), "ghost": (1, 20)},
+            {"pacman": (1, 1), "ghost": (3, 26)}
         ]
 
         # Define test cases for level 5 and 6 with positions for Pac-Man and four ghosts

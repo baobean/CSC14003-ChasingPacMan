@@ -14,53 +14,52 @@ def load_test_map(file_path):
     return np.array(map_data)
 
 def assign_weights(map_data, pacman_pos):
-        """Assign pathfinding weights to the map."""
-        rows, cols = map_data.shape
-        weight_map = np.zeros((rows, cols))  # Create a NumPy array for weights
-        print("hello")
-        for i in range(rows):
-            for j in range(cols):
-                cell = map_data[i][j]
+    """Assign pathfinding weights to the map."""
+    rows, cols = map_data.shape
+    weight_map = np.zeros((rows, cols))  # Create a NumPy array for weights
+    for i in range(rows):
+        for j in range(cols):
+            cell = map_data[i][j]
 
-                # ✅ Ensure correct placement of Pac-Man & Ghosts
-                if (i, j) == pacman_pos:
-                    weight_map[i][j] = 0  # Pac-Man's target position
-                # elif (i, j) in ghost_positions:
-                #     weight_map[i][j] = 0  # Ghost starting positions
-                elif cell in wall.wall_types:  # Walls
-                    weight_map[i][j] = float('inf')
-                elif cell == 0:  # Walkable paths
-                    weight = 1  # Default cost
+            # ✅ Ensure correct placement of Pac-Man & Ghosts
+            if (i, j) == pacman_pos:
+                weight_map[i][j] = 0  # Pac-Man's target position
+            # elif (i, j) in ghost_positions:
+            #     weight_map[i][j] = 0  # Ghost starting positions
+            elif cell in wall.wall_types:  # Walls
+                weight_map[i][j] = float('inf')
+            elif cell == 0:  # Walkable paths
+                weight = 1  # Default cost
 
-                    # Reduce cost for straight paths to encourage open movement
-                    if (0 < i < rows - 1 and map_data[i - 1][j] == 0 and map_data[i + 1][j] == 0) or \
-                       (0 < j < cols - 1 and map_data[i][j - 1] == 0 and map_data[i][j + 1] == 0):
-                        weight = 0.5  # Straight paths are more attractive
+                # Reduce cost for straight paths to encourage open movement
+                if (0 < i < rows - 1 and map_data[i - 1][j] == 0 and map_data[i + 1][j] == 0) or \
+                    (0 < j < cols - 1 and map_data[i][j - 1] == 0 and map_data[i][j + 1] == 0):
+                    weight = 0.5  # Straight paths are more attractive
 
-                    # Slightly increase cost near walls (to prevent hugging)
-                    adjacent_walls = sum([
-                        1 if i > 0 and map_data[i - 1][j] == 1 else 0,
-                        1 if i < rows - 1 and map_data[i + 1][j] == 1 else 0,
-                        1 if j > 0 and map_data[i][j - 1] == 1 else 0,
-                        1 if j < cols - 1 and map_data[i][j + 1] == 1 else 0
-                    ])
+                # Slightly increase cost near walls (to prevent hugging)
+                adjacent_walls = sum([
+                    1 if i > 0 and map_data[i - 1][j] == 1 else 0,
+                    1 if i < rows - 1 and map_data[i + 1][j] == 1 else 0,
+                    1 if j > 0 and map_data[i][j - 1] == 1 else 0,
+                    1 if j < cols - 1 and map_data[i][j + 1] == 1 else 0
+                ])
 
-                    if adjacent_walls >= 2:
-                        weight = 1.0  # Small penalty for hugging corners
+                if adjacent_walls >= 2:
+                    weight = 1.0  # Small penalty for hugging corners
 
-                    weight_map[i][j] = weight
-                else:
-                    weight_map[i][j] = 1  # Default cost
+                weight_map[i][j] = weight
+            else:
+                weight_map[i][j] = 1  # Default cost
 
-        return weight_map
+    return weight_map
 
 # Define 5 test cases
 test_cases = [    
     {"pacman": (1, 1), "ghost": (7, 1)},
-    {"pacman": (1, 1), "ghost": (9, 1)},
-    {"pacman": (1, 1), "ghost": (26, 29)},
-    {"pacman": (1, 1), "ghost": (3, 26)},
-    {"pacman": (1, 1), "ghost": (7, 1)}
+    {"pacman": (1, 1), "ghost": (10, 23)},
+    {"pacman": (1, 1), "ghost": (26, 1)},
+    {"pacman": (1, 1), "ghost": (1, 20)},
+    {"pacman": (1, 1), "ghost": (3, 26)}
 ]
 
 print("\n====== BFS Algorithm - Multiple Test Cases ======\n")
