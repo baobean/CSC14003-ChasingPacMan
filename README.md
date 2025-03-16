@@ -5,7 +5,7 @@ This is a project from Introduction to Artificial Intelligence course, which con
 - Python 3.12.9
 - pip - **newest version**
 - Pygame 2.6.1
-- NumPy
+- NumPy 2.2.3
 
 ## Running the Source Code
 - Clone this repository.
