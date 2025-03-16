@@ -1,5 +1,5 @@
 # CSC14003-ChasingPacMan
-This is a project from Introduction to Artificial Intelligence course, which concentrates on using search algorithms for path finding, presented on a clone of an arcade game call Pac-man.
+This is a project from Introduction to Artificial Intelligence course, which concentrates on using search algorithms for path finding, presented on a clone of an arcade game called Pac-man.
 
 ## Requirements
 - Python 3.12.9
