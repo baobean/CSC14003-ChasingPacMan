@@ -11,12 +11,9 @@ import utils
 import sys
 
 class Game:
-    def __init__(self, map_file="map.csv"):
-        # Initialize Pygame modules        
+    def __init__(self, map_file="map.csv"):     
         pygame.init()
-        pygame.mixer.init()
-        
-        # Tile size and screen dimensions calculation using utility constants    
+        pygame.mixer.init()    
         self.level = 1
         self.current_scene = "intro"
         self.tile_size = utils.tile_size
@@ -27,7 +24,7 @@ class Game:
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
         pygame.display.set_caption("Pac-Man AI")
 
-        # Initialize the game clock for frame rate management
+
         self.clock = pygame.time.Clock()
 
         # Load fonts for rendering text in the game
@@ -42,13 +39,14 @@ class Game:
         ]
         self.munch_index = 0
         self.death_sound = pygame.mixer.Sound("assets/audio/pacman_death.wav")
-        self.death_sound.set_volume(0.25) # Set volume for the death sound effect
+        self.death_sound.set_volume(0.25) 
 
 
         self.text_renderer = TextRenderer()
         wall.wall_images = wall.initialize_walls()
-        self.original_food = pygame.sprite.Group()  # Initialize food group
-        self.food = pygame.sprite.Group()  # Initialize food group
+        self.original_food = pygame.sprite.Group()  
+        self.food = pygame.sprite.Group()  
+
         # Load map and get Pac-Man & Ghosts' positions
         self.map_data, pacman_pos, ghost_positions = self.load_map(map_file)
 
@@ -72,7 +70,7 @@ class Game:
         with open(file_path, newline='') as csvfile:
             reader = csv.reader(csvfile)
             for y, row in enumerate(reader):
-                int_row = [int(cell) for cell in row]  # Convert row to integer list
+                int_row = [int(cell) for cell in row]  
                 map_data.append(int_row)
 
         self.walls = pygame.sprite.Group()  # Initialize walls group
@@ -90,7 +88,6 @@ class Game:
     def generate_map_level(self, level):
         """Generate a list of maps for the specified level."""
 
-        # Initialize a list of maps by creating 5 copies of the original map state
         result_maps = [np.copy(self.original_map_state) for _ in range(5)]
 
         # Define test cases for levels 1 to 4 with positions for Pac-Man and one ghost
@@ -111,7 +108,6 @@ class Game:
             {"pacman": (1, 1), "blue_ghost": (5, 5), "pink_ghost": (9, 12), "orange_ghost": (3,26), "red_ghost": (26,29)}
         ]
 
-        # For levels 1 to 4
         if level <= 4:
             for i, positions in enumerate(test_cases, start=0):
                     pacman_pos = positions["pacman"]
@@ -120,7 +116,6 @@ class Game:
                     # Update the map with ghost and Pac-Man positions
                     result_maps[i][ghost_pos[1]][ghost_pos[0]] = level + 1
                     result_maps[i][pacman_pos[1]][pacman_pos[0]] = 6
-        # For level 5 and above
         else:
             for i, positions in enumerate(test_cases_2, start=0):
                     pacman_pos = positions["pacman"]
@@ -141,19 +136,19 @@ class Game:
     def assign_weights(self, map_data, pacman_pos):
         """Assign pathfinding weights to the map."""
         rows, cols = map_data.shape
-        weight_map = np.zeros((rows, cols))  # Create a NumPy array for weights
+        weight_map = np.zeros((rows, cols))  
         print("hello")
         for i in range(rows):
             for j in range(cols):
                 cell = map_data[i][j]
 
-                # ✅ Ensure correct placement of Pac-Man & Ghosts
+                # Ensure correct placement of Pac-Man & Ghosts
                 if (i, j) == pacman_pos:
-                    weight_map[i][j] = 0  # Pac-Man's target position
-                elif cell in wall.wall_types:  # Walls
+                    weight_map[i][j] = 0 
+                elif cell in wall.wall_types:
                     weight_map[i][j] = float('inf')
-                elif cell == 0:  # Walkable paths
-                    weight = 1  # Default cost
+                elif cell == 0: 
+                    weight = 1  
 
                     # Reduce cost for straight paths to encourage open movement
                     if (0 < i < rows - 1 and map_data[i - 1][j] == 0 and map_data[i + 1][j] == 0) or \
@@ -173,7 +168,7 @@ class Game:
 
                     weight_map[i][j] = weight
                 elif cell == 5:  # Power Pellet
-                    weight_map[i][j] = 10  # Ghosts should avoid Power Pellets
+                    weight_map[i][j] = 10 
                 else:
                     weight_map[i][j] = 1  # Default cost
 
@@ -206,7 +201,6 @@ class Game:
                     y += utils.y_offset
                     ghosts.append(Ghost(ghost_types[cell], (x * self.tile_size, y * self.tile_size)))
                     print(f"Ghost found at: {(x - utils.x_offset) * self.tile_size, (y - utils.y_offset) * self.tile_size}") 
-        # The list that will contain instances of Ghost class
         return ghosts
     
 
@@ -235,19 +229,17 @@ class Game:
     
     def game_scene(self):
         # Set up the screen
-        self.screen.fill((0, 0, 0)) # Fill the screen
-        self.walls.draw(self.screen) # Draw walls
-        self.food.draw(self.screen) # Draw food
+        self.screen.fill((0, 0, 0))
+        self.walls.draw(self.screen) 
+        self.food.draw(self.screen)
         current_score = self.pacman.sprite.score
         self.text_renderer.render_text(self.screen, f"SCORE - {current_score}", 10, 10)
 
         # Draw sprites
-        self.pacman.draw(self.screen)  # Draw Pac-Man
-        self.ghosts.draw(self.screen)  # Draw all ghosts
+        self.pacman.draw(self.screen)  
+        self.ghosts.draw(self.screen) 
 
-        # Get pacman position
         pacman_pos = (self.pacman.sprite.rect.x // self.tile_size - utils.x_offset, self.pacman.sprite.rect.y // self.tile_size - utils.y_offset)
-        # Get all ghost positions
         all_ghosts_positions = [(ghost.rect.x // self.tile_size - utils.x_offset, ghost.rect.y // self.tile_size - utils.y_offset) for ghost in self.ghosts]
 
         self.check_collisions()
@@ -256,7 +248,6 @@ class Game:
         
         # Allow Pac-Man to move only in level 6
         if self.level == 6:
-            # self.pacman.update(self.walls, self.ghosts)
             self.pacman.update(self.walls)
             self.check_collisions()
             if len(self.map_state_list) == 0:
@@ -274,7 +265,7 @@ class Game:
                 "ghosts": other_ghosts_positions,  # Other ghosts except the one moving
                 "ghost": ghost_pos  # The specific ghost moving
             }
-            # ghost.update(self.walls, self.map_state, positions)
+
             ghost.update(self.map_state, positions)
             all_ghosts_positions[i] = (ghost.rect.x // self.tile_size - utils.x_offset, ghost.rect.y // self.tile_size - utils.y_offset)
         # Process events
@@ -337,25 +328,24 @@ class Game:
         total_width = (ghost_width * 4) + (spacing * 3)
         start_x = (self.screen_width - total_width) // 2
 
-        max_y = base_y + 20  # Maximum bounce height
-        speed = 0.01  # Speed of movement (increased for better visibility)
+        max_y = base_y + 20 
+        speed = 0.01  # Speed of movement 
 
-        # ✅ Create a separate ghost animation list (instead of using `self.ghosts`)
+        # Create a separate ghost animation list (instead of using `self.ghosts`)
         if not hasattr(self, "animated_ghosts"):
             self.animated_ghosts = [{"x": start_x + i * (ghost_width + spacing), "y": base_y, "direction": 1, "current_frame": 0} for i in range(4)]
 
-        # ✅ Update ghost positions independently from `self.ghosts`
         for ghost in self.animated_ghosts:
             ghost["y"] += ghost["direction"] * speed
 
             # Reverse direction at boundaries and switch animation frame
             if ghost["y"] >= max_y or ghost["y"] <= base_y:
                 ghost["direction"] *= -1  # Reverse direction
-                ghost["current_frame"] = 1 if ghost["direction"] > 0 else 0  # Change image based on direction
+                ghost["current_frame"] = 1 if ghost["direction"] > 0 else 0 
 
-        # ✅ Draw ghosts
+        # Draw ghosts
         for i, ghost in enumerate(self.animated_ghosts):
-            frame = self.ghost_images[i][ghost["current_frame"]]  # Select frame based on movement direction
+            frame = self.ghost_images[i][ghost["current_frame"]]
             self.screen.blit(frame, (ghost["x"], int(ghost["y"])))
 
                 
@@ -365,10 +355,8 @@ class Game:
             delattr(self, "animated_ghosts")  
         running = True
         while running:
-            # Clear screen
             self.screen.fill((0, 0, 0))
 
-            # Animate ghosts (now properly updates)
             self.ghost_animation(150)
 
             # Render loading text
@@ -376,13 +364,11 @@ class Game:
             text_x = (self.screen_width - text_surface.get_width()) // 2
             self.screen.blit(text_surface, (text_x, 250))
 
-            pygame.display.flip()  # ✅ Update screen every frame
+            pygame.display.flip() 
 
-            # ✅ Exit the loop when 3 seconds have passed
             if pygame.time.get_ticks() - self.start_loading_time > 2000:
                 running = False
 
-        # ✅ After loading, switch to the game scene
         self.current_scene = "game"
         self.map_state_list = self.generate_map_level(self.level)
         self.map_state = self.map_state_list[0]
@@ -419,8 +405,8 @@ class Game:
 
                 # Fix `>` symbol alignment to match centered text
                 indicator_surface = self.text_font.render(">", True, 'white')
-                indicator_x = text_positions[0][0] - 30  # Place `>` 30 pixels left of text
-                indicator_y = text_positions[selected_option][1]  # Match selected option's Y position
+                indicator_x = text_positions[0][0] - 30 
+                indicator_y = text_positions[selected_option][1]  
                 self.screen.blit(indicator_surface, (indicator_x, indicator_y))
             else:
                 # Show level selection dropdown
@@ -434,8 +420,8 @@ class Game:
 
                 # Align `>` with level text
                 indicator_surface = self.text_font.render(">", True, 'white')
-                indicator_x = text_positions[0][0] - 30  # Align left of text
-                indicator_y = text_positions[self.level][1]  # Align with selected level
+                indicator_x = text_positions[0][0] - 30  
+                indicator_y = text_positions[self.level][1]  
                 self.screen.blit(indicator_surface, (indicator_x, indicator_y))
 
             pygame.display.flip()
@@ -473,7 +459,7 @@ class Game:
         if self.level > 0:
             # Confirm level selection and start game
             self.current_scene = "loading"
-            self.start_loading_time = pygame.time.get_ticks()  # ✅ Start timer
+            self.start_loading_time = pygame.time.get_ticks()
             self.dropdown_active = False
             
 
@@ -485,11 +471,11 @@ class Game:
         
         x_center = (self.screen_width - max_width) // 2
         if center:
-            y_position = (self.screen_height - total_height) // 3 + start_y  # Use division by 3 instead of 2
+            y_position = (self.screen_height - total_height) // 3 + start_y 
         else:
             y_position = start_y
 
-        positions = []  # Store positions if needed
+        positions = []  
 
         for surface in surfaces:
             text_x = (self.screen_width - surface.get_width()) // 2  # Center each line
@@ -513,7 +499,7 @@ class Game:
                     pygame.quit()
                     sys.exit()
             if self.current_scene == 'intro':
-                if not pygame.mixer.get_busy():  # ✅ Restart music if it's stopped
+                if not pygame.mixer.get_busy(): 
                     self.bgm.play(-1)
                 self.intro_scene()
             if self.current_scene == 'loading':
